@@ -1,0 +1,1115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Connected Intelligence — Platform Demo</title>
+<style>
+  /* ============================================================
+     DESIGN TOKENS
+     Palette: institutional banking — deep ink, slate, a single
+     confident teal for the assistant layer, warm paper canvas.
+     Type: Fraunces (display, used with restraint) + Inter (body/UI).
+     ============================================================ */
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;450;500;600;700&display=swap');
+
+  :root {
+    --ink:        #0E1B2A;   /* near-black navy — primary text, sidebar */
+    --ink-soft:   #2B3A4A;
+    --slate:      #5B6B7B;   /* secondary text */
+    --slate-2:    #8A98A6;
+    --line:       #E3E7EB;   /* hairlines */
+    --line-2:     #EEF1F4;
+    --paper:      #F6F7F9;   /* app canvas */
+    --white:      #FFFFFF;
+    --teal:       #0E7C86;   /* the assistant layer — single accent */
+    --teal-deep:  #0A5D65;
+    --teal-tint:  #E6F2F3;
+    --teal-line:  #BDDDDF;
+    --amber:      #B5740C;   /* uncertainty / caution signal */
+    --amber-tint: #FBF1DF;
+    --green:      #2F7D4F;
+    --green-tint: #E7F2EB;
+    --red:        #A8332B;
+    --red-tint:   #F8E9E7;
+    --shadow:     0 1px 2px rgba(14,27,42,.06), 0 8px 24px rgba(14,27,42,.08);
+    --shadow-lg:  0 12px 40px rgba(14,27,42,.16);
+    --radius:     10px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body { height: 100%; }
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background: var(--ink);
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+    overflow: hidden;
+  }
+
+  /* ============================================================
+     APP SHELL
+     ============================================================ */
+  .app {
+    display: grid;
+    grid-template-columns: 232px 1fr;
+    height: 100vh;
+    background: var(--paper);
+  }
+
+  /* ---- LEFT NAV (platform) ---- */
+  .nav {
+    background: var(--ink);
+    color: #C3CCD6;
+    display: flex;
+    flex-direction: column;
+    padding: 22px 0 16px;
+    border-right: 1px solid #1B2A3A;
+  }
+  .brand {
+    display: flex; align-items: center; gap: 11px;
+    padding: 0 22px 24px;
+  }
+  .brand .mark {
+    width: 30px; height: 30px; border-radius: 7px;
+    background: linear-gradient(135deg, var(--teal) 0%, var(--teal-deep) 100%);
+    display: grid; place-items: center; flex-shrink: 0;
+  }
+  .brand .mark svg { width: 16px; height: 16px; }
+  .brand .name {
+    font-weight: 600; font-size: 14.5px; color: #fff; letter-spacing: -.2px;
+    line-height: 1.15;
+  }
+  .brand .name span { display:block; font-size: 10.5px; color: var(--slate-2); font-weight: 450; letter-spacing: .3px; }
+
+  .nav-group { margin-top: 6px; }
+  .nav-label {
+    font-size: 10px; text-transform: uppercase; letter-spacing: .9px;
+    color: #5A6A7A; padding: 14px 22px 7px; font-weight: 600;
+  }
+  .nav-item {
+    display: flex; align-items: center; gap: 11px;
+    padding: 8.5px 22px; font-size: 13.5px; color: #AEB9C4;
+    cursor: pointer; border-left: 2.5px solid transparent;
+    transition: background .12s, color .12s;
+  }
+  .nav-item svg { width: 16px; height: 16px; opacity: .85; flex-shrink: 0; }
+  .nav-item:hover { background: #16243340; color: #E4EAF0; }
+  .nav-item.active {
+    color: #fff; background: #16242F; border-left-color: var(--teal);
+    font-weight: 500;
+  }
+  .nav-spacer { flex: 1; }
+  .nav-foot {
+    padding: 0 22px; font-size: 11px; color: #4E5E6E; line-height: 1.5;
+    border-top: 1px solid #1B2A3A; padding-top: 14px; margin-top: 8px;
+  }
+
+  /* ---- MAIN AREA ---- */
+  .main {
+    display: grid;
+    grid-template-rows: 56px 1fr;
+    min-width: 0;
+  }
+  .topbar {
+    background: var(--white);
+    border-bottom: 1px solid var(--line);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 26px;
+  }
+  .topbar .crumbs { font-size: 13px; color: var(--slate); display:flex; align-items:center; gap:8px; }
+  .topbar .crumbs b { color: var(--ink); font-weight: 600; }
+  .topbar .crumbs .sep { color: var(--slate-2); }
+  .topbar .right { display: flex; align-items: center; gap: 18px; }
+  .topbar .search {
+    width: 240px; height: 34px; border: 1px solid var(--line); border-radius: 8px;
+    background: var(--paper); font-size: 12.5px; color: var(--slate);
+    padding: 0 12px; display: flex; align-items: center; gap: 8px;
+  }
+  .topbar .search svg { width: 14px; height: 14px; }
+  .topbar .av {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: var(--teal-tint); color: var(--teal-deep);
+    display: grid; place-items: center; font-weight: 600; font-size: 12px;
+    border: 1px solid var(--teal-line);
+  }
+
+  .canvas {
+    display: grid;
+    grid-template-columns: 1fr 408px;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  /* ---- WORKSPACE (left of assistant) ---- */
+  .workspace {
+    overflow-y: auto;
+    padding: 26px 30px 60px;
+  }
+  .ws-head { margin-bottom: 20px; }
+  .ws-eyebrow {
+    font-size: 11px; text-transform: uppercase; letter-spacing: 1px;
+    color: var(--teal-deep); font-weight: 600; margin-bottom: 8px;
+  }
+  .ws-title {
+    font-family: 'Fraunces', serif; font-size: 27px; font-weight: 500;
+    color: var(--ink); letter-spacing: -.4px; line-height: 1.1;
+  }
+  .ws-sub { font-size: 13.5px; color: var(--slate); margin-top: 9px; max-width: 56ch; line-height: 1.5; }
+
+  /* dimension chip row */
+  .dimbar {
+    display: flex; gap: 7px; flex-wrap: wrap; margin: 18px 0 22px;
+  }
+  .dim-chip {
+    font-size: 11.5px; padding: 6px 11px; border-radius: 20px;
+    border: 1px solid var(--line); background: var(--white); color: var(--slate);
+    cursor: pointer; transition: all .12s; font-weight: 500;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .dim-chip .n { font-size: 10px; color: var(--slate-2); font-weight: 700; }
+  .dim-chip:hover { border-color: var(--teal-line); color: var(--teal-deep); background: var(--teal-tint); }
+  .dim-chip.active {
+    background: var(--ink); color: #fff; border-color: var(--ink);
+  }
+  .dim-chip.active .n { color: var(--teal); }
+
+  /* account cards */
+  .acct-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 22px; }
+  .acct {
+    background: var(--white); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 16px 17px; box-shadow: var(--shadow);
+  }
+  .acct .lbl { font-size: 11.5px; color: var(--slate); font-weight: 500; display:flex; justify-content:space-between; }
+  .acct .lbl .tag { font-size: 10px; color: var(--slate-2); }
+  .acct .val { font-family: 'Fraunces', serif; font-size: 23px; font-weight: 500; color: var(--ink); margin-top: 9px; letter-spacing: -.5px; }
+  .acct .delta { font-size: 11.5px; margin-top: 6px; font-weight: 500; }
+  .acct .delta.up { color: var(--green); }
+  .acct .delta.down { color: var(--red); }
+
+  /* data table */
+  .panel {
+    background: var(--white); border: 1px solid var(--line); border-radius: var(--radius);
+    box-shadow: var(--shadow); overflow: hidden; margin-bottom: 20px;
+  }
+  .panel-head {
+    padding: 14px 18px; border-bottom: 1px solid var(--line-2);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .panel-head h3 { font-size: 14px; font-weight: 600; color: var(--ink); }
+  .panel-head .meta { font-size: 11.5px; color: var(--slate-2); }
+  table { width: 100%; border-collapse: collapse; }
+  th {
+    text-align: left; font-size: 10.5px; text-transform: uppercase; letter-spacing: .6px;
+    color: var(--slate-2); font-weight: 600; padding: 10px 18px; border-bottom: 1px solid var(--line-2);
+  }
+  td { font-size: 13px; color: var(--ink-soft); padding: 11px 18px; border-bottom: 1px solid var(--line-2); }
+  tr:last-child td { border-bottom: none; }
+  td.num { font-variant-numeric: tabular-nums; font-weight: 500; }
+  .pill { font-size: 11px; padding: 2.5px 9px; border-radius: 20px; font-weight: 600; display: inline-block; }
+  .pill.ok { background: var(--green-tint); color: var(--green); }
+  .pill.wait { background: var(--amber-tint); color: var(--amber); }
+  .pill.done { background: var(--teal-tint); color: var(--teal-deep); }
+
+  .ws-foot { font-size: 11.5px; color: var(--slate-2); text-align: center; margin-top: 10px; }
+
+  /* highlight pulse when assistant references a workspace element */
+  .flash { animation: flash 1.6s ease; }
+  @keyframes flash {
+    0%, 100% { box-shadow: var(--shadow); }
+    18% { box-shadow: 0 0 0 3px var(--teal-line), var(--shadow); }
+    60% { box-shadow: 0 0 0 3px var(--teal-line), var(--shadow); }
+  }
+
+  /* ============================================================
+     ASSISTANT PANEL
+     ============================================================ */
+  .assistant {
+    background: var(--white);
+    border-left: 1px solid var(--line);
+    display: flex; flex-direction: column;
+    min-height: 0;
+  }
+  .as-head {
+    padding: 15px 18px; border-bottom: 1px solid var(--line);
+    display: flex; align-items: center; gap: 11px;
+    background: linear-gradient(180deg, #fff, #FBFCFC);
+  }
+  .as-orb {
+    width: 30px; height: 30px; border-radius: 8px;
+    background: linear-gradient(135deg, var(--teal) 0%, var(--teal-deep) 100%);
+    display: grid; place-items: center; flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(14,124,134,.3);
+  }
+  .as-orb svg { width: 16px; height: 16px; }
+  .as-head .t { flex: 1; }
+  .as-head .t b { font-size: 14px; font-weight: 600; color: var(--ink); display: block; letter-spacing: -.1px; }
+  .as-head .t span { font-size: 11px; color: var(--teal-deep); font-weight: 500; display:flex; align-items:center; gap:5px; }
+  .as-head .t span::before { content:''; width:6px; height:6px; border-radius:50%; background: var(--green); }
+  .as-head .dimtag {
+    font-size: 10px; text-transform: uppercase; letter-spacing: .6px; font-weight: 700;
+    color: var(--teal-deep); background: var(--teal-tint); border: 1px solid var(--teal-line);
+    padding: 4px 8px; border-radius: 6px;
+  }
+
+  .as-body {
+    flex: 1; overflow-y: auto; padding: 18px;
+    display: flex; flex-direction: column; gap: 14px;
+    background:
+      radial-gradient(circle at 1px 1px, #EDF0F2 1px, transparent 0) 0 0 / 22px 22px;
+  }
+  .as-body::-webkit-scrollbar { width: 7px; }
+  .as-body::-webkit-scrollbar-thumb { background: #D5DBE0; border-radius: 4px; }
+
+  /* message bubbles */
+  .msg { display: flex; gap: 9px; max-width: 100%; animation: rise .4s cubic-bezier(.2,.8,.2,1); }
+  @keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  .msg.user { flex-direction: row-reverse; }
+  .msg .ava {
+    width: 26px; height: 26px; border-radius: 7px; flex-shrink: 0;
+    display: grid; place-items: center; font-size: 11px; font-weight: 600;
+  }
+  .msg.ai .ava { background: var(--teal-tint); color: var(--teal-deep); border: 1px solid var(--teal-line); }
+  .msg.user .ava { background: var(--ink); color: #fff; }
+  .bubble {
+    border-radius: 12px; padding: 11px 13px; font-size: 13px; line-height: 1.5;
+    max-width: 300px;
+  }
+  .msg.ai .bubble { background: var(--white); border: 1px solid var(--line); color: var(--ink-soft); border-top-left-radius: 4px; }
+  .msg.user .bubble { background: var(--ink); color: #EaF0F5; border-top-right-radius: 4px; }
+  .bubble strong { color: var(--ink); font-weight: 600; }
+  .msg.user .bubble strong { color: #fff; }
+  .bubble .mini { font-size: 11px; color: var(--slate-2); margin-top: 7px; }
+
+  /* rich response cards inside assistant */
+  .rcard {
+    border: 1px solid var(--line); border-radius: 10px; overflow: hidden;
+    margin-top: 9px; background: var(--white);
+  }
+  .rcard .rc-h {
+    padding: 9px 12px; background: var(--paper); border-bottom: 1px solid var(--line-2);
+    font-size: 11px; font-weight: 600; color: var(--ink); display:flex; align-items:center; justify-content:space-between;
+  }
+  .rcard .rc-h .rc-tag { font-size: 9.5px; text-transform: uppercase; letter-spacing:.5px; color: var(--slate-2); font-weight:700; }
+  .rc-row { display: flex; justify-content: space-between; padding: 8px 12px; font-size: 12px; border-bottom: 1px solid var(--line-2); }
+  .rc-row:last-child { border-bottom: none; }
+  .rc-row .k { color: var(--slate); }
+  .rc-row .v { color: var(--ink); font-weight: 600; font-variant-numeric: tabular-nums; }
+  .rc-row .v.pos { color: var(--green); }
+  .rc-row .v.neg { color: var(--red); }
+
+  /* goal progress bar (dim 1) */
+  .goalbar { margin-top: 4px; }
+  .goalbar .track { height: 7px; background: var(--line-2); border-radius: 4px; overflow: hidden; }
+  .goalbar .fill { height: 100%; background: linear-gradient(90deg, var(--teal), var(--teal-deep)); border-radius: 4px; transition: width 1s ease; }
+  .goalbar .row { display: flex; justify-content: space-between; font-size: 11px; color: var(--slate); margin-top: 5px; }
+
+  /* confidence meter (dim 3) */
+  .conf { display: flex; align-items: center; gap: 9px; margin-top: 4px; }
+  .conf .bars { display: flex; gap: 3px; }
+  .conf .bars i { width: 7px; height: 16px; border-radius: 2px; background: var(--line); display:block; }
+  .conf .bars i.on-amber { background: var(--amber); }
+  .conf .bars i.on-green { background: var(--green); }
+  .conf .lab { font-size: 11.5px; font-weight: 600; }
+  .conf .lab.amber { color: var(--amber); }
+  .conf .lab.green { color: var(--green); }
+
+  /* explainability trace (dim 4) */
+  .trace { margin-top: 4px; }
+  .trace .step {
+    display: flex; gap: 9px; font-size: 11.5px; color: var(--slate); padding: 4px 0;
+    align-items: flex-start;
+  }
+  .trace .step .dot {
+    width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--teal);
+    flex-shrink: 0; margin-top: 1px; display:grid; place-items:center;
+  }
+  .trace .step .dot::after { content:''; width:4px;height:4px;border-radius:50%;background:var(--teal); }
+  .trace .step b { color: var(--ink-soft); font-weight: 600; }
+
+  /* agent interop log (dim 5) */
+  .agentlog { margin-top: 4px; font-family: 'Inter'; }
+  .agentlog .line { font-size: 11px; padding: 6px 10px; border-radius: 6px; margin-bottom: 5px; display:flex; align-items:center; gap:7px; }
+  .agentlog .line .ic { width:14px;height:14px;flex-shrink:0; }
+  .agentlog .line.in { background: var(--paper); color: var(--slate); }
+  .agentlog .line.gate { background: var(--amber-tint); color: var(--amber); }
+  .agentlog .line.ok { background: var(--green-tint); color: var(--green); font-weight:500; }
+
+  /* peer benchmark (dim 6) */
+  .bench { margin-top: 6px; }
+  .bench .b-row { display: grid; grid-template-columns: 1fr auto; align-items:center; gap:10px; margin-bottom: 9px; }
+  .bench .b-row .b-lab { font-size: 11.5px; color: var(--slate); }
+  .bench .b-row .b-lab b { color: var(--ink); font-weight:600; }
+  .bench .b-track { height: 6px; background: var(--line-2); border-radius: 3px; position: relative; }
+  .bench .b-fill { height:100%; border-radius:3px; background: var(--slate-2); }
+  .bench .b-fill.you { background: var(--teal); }
+  .bench .b-you-mark { font-size: 11px; font-weight:600; color: var(--teal-deep); }
+
+  /* memory recall (dim 7) */
+  .memnote {
+    margin-top: 6px; padding: 9px 11px; border-left: 2.5px solid var(--teal);
+    background: var(--teal-tint); border-radius: 0 8px 8px 0; font-size: 12px; color: var(--ink-soft);
+  }
+  .memnote b { color: var(--teal-deep); }
+
+  /* scripted action buttons */
+  .as-actions {
+    padding: 13px 16px; border-top: 1px solid var(--line); background: #FBFCFC;
+  }
+  .as-actions .hint { font-size: 10.5px; text-transform: uppercase; letter-spacing:.7px; color: var(--slate-2); font-weight:600; margin-bottom: 9px; }
+  .chip-stack { display: flex; flex-direction: column; gap: 8px; }
+  .ask {
+    text-align: left; border: 1px solid var(--teal-line); background: var(--white);
+    color: var(--teal-deep); font-size: 12.5px; font-weight: 500; padding: 10px 12px;
+    border-radius: 9px; cursor: pointer; transition: all .12s; font-family: inherit;
+    display: flex; align-items: center; gap: 9px; line-height: 1.35;
+  }
+  .ask:hover { background: var(--teal-tint); border-color: var(--teal); transform: translateX(2px); }
+  .ask svg { width: 14px; height: 14px; flex-shrink: 0; color: var(--teal); }
+  .ask:disabled { opacity: .45; cursor: default; transform: none; }
+  .ask .kbd { margin-left:auto; font-size:10px; color: var(--slate-2); border:1px solid var(--line); border-radius:4px; padding:1px 5px; }
+
+  .reset-row { padding: 0 16px 14px; background: #FBFCFC; }
+  .reset {
+    width: 100%; border: none; background: transparent; color: var(--slate);
+    font-size: 11.5px; cursor: pointer; padding: 7px; font-family: inherit;
+    display:flex; align-items:center; justify-content:center; gap:6px;
+  }
+  .reset:hover { color: var(--ink); }
+  .reset svg { width: 13px; height: 13px; }
+
+  /* typing indicator */
+  .typing { display:flex; gap:9px; }
+  .typing .ava { width:26px;height:26px;border-radius:7px;background:var(--teal-tint);border:1px solid var(--teal-line);display:grid;place-items:center;color:var(--teal-deep);font-size:11px;font-weight:600;flex-shrink:0; }
+  .typing .dots { background:#fff;border:1px solid var(--line);border-radius:12px;border-top-left-radius:4px;padding:13px 14px;display:flex;gap:4px;align-items:center; }
+  .typing .dots i { width:6px;height:6px;border-radius:50%;background:var(--slate-2);animation: bob 1.2s infinite; }
+  .typing .dots i:nth-child(2){animation-delay:.18s;} .typing .dots i:nth-child(3){animation-delay:.36s;}
+  @keyframes bob { 0%,60%,100%{opacity:.3;transform:translateY(0);} 30%{opacity:1;transform:translateY(-4px);} }
+
+  /* preamble line */
+  .preamble { font-size:11.5px; color: var(--teal-deep); font-style: italic; display:flex; align-items:center; gap:7px; }
+  .preamble svg { width:13px;height:13px; animation: spin 1s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* intro overlay */
+  .intro {
+    position: fixed; inset: 0; background: rgba(14,27,42,.55); backdrop-filter: blur(4px);
+    display: grid; place-items: center; z-index: 100;
+  }
+  .intro .card {
+    background: #fff; border-radius: 16px; max-width: 460px; padding: 34px 36px;
+    box-shadow: var(--shadow-lg); text-align: center;
+  }
+  .intro .ic {
+    width: 52px; height: 52px; border-radius: 13px; margin: 0 auto 18px;
+    background: linear-gradient(135deg, var(--teal), var(--teal-deep)); display:grid; place-items:center;
+  }
+  .intro .ic svg { width: 26px; height: 26px; }
+  .intro h1 { font-family:'Fraunces',serif; font-size: 25px; font-weight:500; color: var(--ink); letter-spacing:-.4px; }
+  .intro p { font-size: 13.5px; color: var(--slate); line-height:1.6; margin-top: 12px; }
+  .intro .go {
+    margin-top: 22px; background: var(--ink); color:#fff; border:none; font-family:inherit;
+    font-size: 13.5px; font-weight:600; padding: 12px 26px; border-radius: 9px; cursor:pointer;
+    transition: background .15s;
+  }
+  .intro .go:hover { background: var(--teal-deep); }
+  .intro .legend { font-size: 11px; color: var(--slate-2); margin-top: 16px; }
+
+  @media (max-width: 1080px) {
+    .canvas { grid-template-columns: 1fr; }
+    .assistant { display:none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- INTRO -->
+<div class="intro" id="intro">
+  <div class="card">
+    <div class="ic">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M12 2a4 4 0 0 1 4 4v1a4 4 0 0 1 0 8v1a4 4 0 0 1-8 0v-1a4 4 0 0 1 0-8V6a4 4 0 0 1 4-4Z"/><circle cx="12" cy="11" r="1.5" fill="#fff" stroke="none"/></svg>
+    </div>
+    <h1>Connected Intelligence</h1>
+    <p>A working demonstration of an AI assistant embedded inside a commercial banking platform — shown across seven capabilities that separate a connected assistant from a chatbot.</p>
+    <p style="font-size:12.5px;color:var(--slate-2);margin-top:10px;">Pick a dimension from the chips at the top, then click the suggested prompts in the assistant panel. Every response is scripted for this walkthrough.</p>
+    <button class="go" onclick="document.getElementById('intro').style.display='none'">Enter the platform</button>
+    <div class="legend">Demo build · illustrative data · no live banking connection</div>
+  </div>
+</div>
+
+<div class="app">
+  <!-- LEFT NAV -->
+  <aside class="nav">
+    <div class="brand">
+      <div class="mark"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2"><path d="M3 10l9-6 9 6"/><path d="M5 9v10h14V9"/><path d="M9 19v-5h6v5"/></svg></div>
+      <div class="name">Commercial<br>Banking<span>Treasury Workspace</span></div>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-label">Overview</div>
+      <div class="nav-item active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg> Dashboard</div>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-label">Payments</div>
+      <div class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18"/><path d="M14 5l7 7-7 7"/></svg> Wires</div>
+      <div class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h7l-1 8 10-12h-7l1-8z"/></svg> Instant Payments</div>
+      <div class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/></svg> ACH</div>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-label">Liquidity &amp; Markets</div>
+      <div class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg> Cash Balances</div>
+      <div class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/></svg> FX</div>
+      <div class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z"/><path d="M9 13h6M9 17h4"/></svg> TIR Reports</div>
+    </div>
+
+    <div class="nav-spacer"></div>
+    <div class="nav-foot">Northwind Materials Inc.<br>Treasury · 14 accounts · USD primary</div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="topbar">
+      <div class="crumbs"><b>Dashboard</b> <span class="sep">/</span> <span id="crumb-ctx">Treasury overview</span></div>
+      <div class="right">
+        <div class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg> Search accounts, payments…</div>
+        <div class="av">DM</div>
+      </div>
+    </div>
+
+    <div class="canvas">
+      <!-- WORKSPACE -->
+      <main class="workspace">
+        <div class="ws-head">
+          <div class="ws-eyebrow" id="ws-eyebrow">Seven dimensions of connected intelligence</div>
+          <div class="ws-title" id="ws-title">Treasury overview</div>
+          <div class="ws-sub" id="ws-sub">Select a dimension to load its scenario. The workspace shows what the treasurer sees; the assistant on the right shows the intelligence layer working over the same data — Wires, Instant Payments, ACH, Cash Balances, FX and TIR reports.</div>
+        </div>
+
+        <div class="dimbar" id="dimbar"><!-- chips injected --></div>
+
+        <!-- account cards (persistent context) -->
+        <div class="acct-grid" id="acctGrid">
+          <div class="acct" id="acct-1">
+            <div class="lbl">Operating — USD <span class="tag">…4471</span></div>
+            <div class="val">$48.20M</div>
+            <div class="delta down">−$3.10M since Monday</div>
+          </div>
+          <div class="acct" id="acct-2">
+            <div class="lbl">Concentration <span class="tag">…0192</span></div>
+            <div class="val">$112.6M</div>
+            <div class="delta up">+$6.40M overnight sweep</div>
+          </div>
+          <div class="acct" id="acct-3">
+            <div class="lbl">EUR Operating <span class="tag">…8830</span></div>
+            <div class="val">€21.4M</div>
+            <div class="delta down">FX exposure unhedged</div>
+          </div>
+        </div>
+
+        <!-- dynamic panel -->
+        <div id="wsPanel"><!-- scenario panel injected --></div>
+
+        <div class="ws-foot">Illustrative figures for demonstration · Northwind Materials Inc. (fictional)</div>
+      </main>
+
+      <!-- ASSISTANT -->
+      <aside class="assistant">
+        <div class="as-head">
+          <div class="as-orb"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M12 2a4 4 0 0 1 4 4v1a4 4 0 0 1 0 8v1a4 4 0 0 1-8 0v-1a4 4 0 0 1 0-8V6a4 4 0 0 1 4-4Z"/><circle cx="12" cy="11" r="1.3" fill="#fff" stroke="none"/></svg></div>
+          <div class="t"><b>Assistant</b><span>Connected to your workspace</span></div>
+          <div class="dimtag" id="dimtag">01 · Goal</div>
+        </div>
+
+        <div class="as-body" id="chat"><!-- messages injected --></div>
+
+        <div class="as-actions">
+          <div class="hint" id="askHint">Try these</div>
+          <div class="chip-stack" id="askStack"><!-- ask buttons injected --></div>
+        </div>
+        <div class="reset-row">
+          <button class="reset" onclick="resetDim()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg> Restart this scenario</button>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   DEMO DATA — the seven dimensions, each self-contained.
+   Every assistant turn is scripted. No model calls.
+   ============================================================ */
+
+const DIMENSIONS = [
+  /* ---------------------------------------------------------- 01 GOAL HOLDING */
+  {
+    id: 1, key: 'goal',
+    chip: 'Goal Holding',
+    tag: '01 · Goal',
+    eyebrow: 'Dimension 01 — Goal-directed agency',
+    title: 'Goal Holding',
+    sub: 'A named, time-bounded objective the assistant carries across sessions, products and channels — and flags when it drifts, before you ask.',
+    crumb: 'Q2 idle-cash objective',
+    panel: `
+      <div class="panel" id="p-goal">
+        <div class="panel-head"><h3>Active treasury objective</h3><span class="meta">Set 6 weeks ago · reviewed every cycle</span></div>
+        <table>
+          <tr><td style="width:55%"><b>Keep idle operating cash below $5M</b><br><span style="font-size:11.5px;color:var(--slate)">while preserving a 5-day payroll buffer</span></td>
+              <td class="num">Target ≤ $5.0M</td>
+              <td><span class="pill wait">Drifting</span></td></tr>
+          <tr><td>Current idle balance (USD …4471)</td><td class="num">$8.7M</td><td><span style="font-size:11.5px;color:var(--amber);font-weight:600">+$3.7M over</span></td></tr>
+          <tr><td>5-day payroll buffer</td><td class="num">$12.0M</td><td><span class="pill ok">Protected</span></td></tr>
+        </table>
+      </div>`,
+    seed: [
+      { who:'ai', html:`Morning. Before you start — I'm still holding your Q2 objective: <strong>keep idle operating cash under $5M while protecting a 5-day payroll buffer</strong>. You set that six weeks ago.` }
+    ],
+    asks: [
+      {
+        label:'Where are we against that goal?',
+        preamble:'Checking idle balances across operating accounts…',
+        reply:[
+          { who:'user', html:`Where are we against that goal?` },
+          { who:'ai', html:`You've drifted. Idle cash on USD …4471 is <strong>$8.7M</strong> — that's $3.7M over your $5M ceiling. The payroll buffer is fine at $12M.`,
+            card:`<div class="goalbar">
+                    <div class="track"><div class="fill" style="width:0%" data-fill="74"></div></div>
+                    <div class="row"><span>$5.0M target</span><span style="color:var(--amber);font-weight:600">$8.7M now · 74% over</span></div>
+                  </div>`,
+            flash:'acct-1' }
+        ]
+      },
+      {
+        label:'Why did it drift?',
+        preamble:'Tracing the balance change to source activity…',
+        reply:[
+          { who:'user', html:`Why did it drift?` },
+          { who:'ai', html:`Two inbound ACH receipts cleared Tuesday (<strong>$2.9M</strong> combined) and a Wednesday wire you expected to send was held for beneficiary review. Nothing left the account, so the balance climbed.`,
+            card:`<div class="rcard">
+                    <div class="rc-h">What moved the balance <span class="rc-tag">Last 3 days</span></div>
+                    <div class="rc-row"><span class="k">ACH receipts (2)</span><span class="v pos">+$2.9M</span></div>
+                    <div class="rc-row"><span class="k">Outbound wire — held</span><span class="v neg">$0 (pending)</span></div>
+                    <div class="rc-row"><span class="k">Net drift vs target</span><span class="v">+$3.7M</span></div>
+                  </div>` }
+        ]
+      },
+      {
+        label:'What should I do about it?',
+        preamble:'Modelling a sweep against the buffer constraint…',
+        reply:[
+          { who:'user', html:`What should I do about it?` },
+          { who:'ai', html:`Sweep <strong>$4.0M</strong> from USD …4471 into your concentration account. That brings idle cash to $4.7M — under target — and leaves the 5-day payroll buffer untouched. Want me to stage it for your approval in Cash Balances?`,
+            card:`<div class="rcard">
+                    <div class="rc-h">Proposed sweep <span class="rc-tag">Staged, not sent</span></div>
+                    <div class="rc-row"><span class="k">From · USD …4471</span><span class="v">−$4.0M</span></div>
+                    <div class="rc-row"><span class="k">To · Concentration …0192</span><span class="v pos">+$4.0M</span></div>
+                    <div class="rc-row"><span class="k">Idle cash after</span><span class="v" style="color:var(--green)">$4.7M ✓ under $5M</span></div>
+                  </div>` }
+        ]
+      }
+    ]
+  },
+
+  /* ---------------------------------------------------------- 02 SITUATIONAL REASONING */
+  {
+    id: 2, key:'situ',
+    chip:'Situational Reasoning',
+    tag:'02 · Situation',
+    eyebrow:'Dimension 02 — Situation awareness',
+    title:'Situational Reasoning',
+    sub:'Connecting Cash Balances, FX, ACH and Wires into one picture — and projecting what happens next, not just reporting what happened.',
+    crumb:'Cross-product position',
+    panel:`
+      <div class="panel">
+        <div class="panel-head"><h3>This week — across products</h3><span class="meta">Cash · FX · Payments</span></div>
+        <table>
+          <thead><tr><th>Signal</th><th>Source</th><th>Value</th></tr></thead>
+          <tr><td>EUR payable due Thu</td><td>Wires</td><td class="num">€18.0M</td></tr>
+          <tr><td>EUR operating balance</td><td>Cash Balances …8830</td><td class="num">€21.4M</td></tr>
+          <tr><td>EUR/USD spot</td><td>FX</td><td class="num">1.0840</td></tr>
+          <tr><td>Large ACH receipt expected</td><td>ACH</td><td class="num">$6.2M Fri</td></tr>
+        </table>
+      </div>`,
+    seed:[
+      { who:'ai', html:`I'm watching this week across products. There's a connection between your <strong>EUR payable</strong>, your <strong>EUR balance</strong> and <strong>FX</strong> that's worth surfacing before Thursday.` }
+    ],
+    asks:[
+      {
+        label:'Any risks I should see this week?',
+        preamble:'Correlating payables, balances and FX exposure…',
+        reply:[
+          { who:'user', html:`Any risks I should see this week?` },
+          { who:'ai', html:`One that spans three products. Your <strong>€18M wire</strong> goes out Thursday. Your EUR account holds €21.4M — enough today. But it's <strong>unhedged</strong>, and if EUR/USD moves the way it did last week, the dollar cost of that payable swings by roughly <strong>$240k</strong>.`,
+            card:`<div class="rcard">
+                    <div class="rc-h">Connected position <span class="rc-tag">3 products</span></div>
+                    <div class="rc-row"><span class="k">Wires — EUR payable Thu</span><span class="v">€18.0M</span></div>
+                    <div class="rc-row"><span class="k">Cash — EUR available</span><span class="v">€21.4M</span></div>
+                    <div class="rc-row"><span class="k">FX — exposure if unhedged</span><span class="v neg">±$240k</span></div>
+                  </div>`,
+            flash:'acct-3' }
+        ]
+      },
+      {
+        label:'What happens if EUR/USD moves?',
+        preamble:'Projecting Thursday settlement under two rate paths…',
+        reply:[
+          { who:'user', html:`What happens if EUR/USD moves before Thursday?` },
+          { who:'ai', html:`Here's the projection, not just today's number. At spot you pay <strong>$19.51M</strong>. If EUR strengthens to 1.10 you pay $19.80M; if it softens to 1.07 you pay $19.26M. The Friday ACH receipt of $6.2M lands after the wire, so it doesn't cover the gap in time.`,
+            card:`<div class="rcard">
+                    <div class="rc-h">Thursday settlement — projected <span class="rc-tag">€18M payable</span></div>
+                    <div class="rc-row"><span class="k">Spot 1.0840</span><span class="v">$19.51M</span></div>
+                    <div class="rc-row"><span class="k">If 1.1000 (EUR up)</span><span class="v neg">$19.80M</span></div>
+                    <div class="rc-row"><span class="k">If 1.0700 (EUR down)</span><span class="v pos">$19.26M</span></div>
+                  </div>` }
+        ]
+      },
+      {
+        label:'How would I cover it?',
+        preamble:'Comparing a forward against same-day funding…',
+        reply:[
+          { who:'user', html:`How would I cover it?` },
+          { who:'ai', html:`Two clean options. <strong>Lock a forward</strong> on the €18M now and the Thursday cost is fixed regardless of spot — that removes the ±$240k swing. Or fund from USD via FX same-day, but you'd carry the rate risk until then. Given the payable is firm, the forward is the lower-risk path. I can pre-fill the FX ticket for you to review.` }
+        ]
+      }
+    ]
+  },
+
+  /* ---------------------------------------------------------- 03 CALIBRATED UNCERTAINTY */
+  {
+    id: 3, key:'conf',
+    chip:'Calibrated Uncertainty',
+    tag:'03 · Confidence',
+    eyebrow:'Dimension 03 — Model calibration',
+    title:'Calibrated Uncertainty',
+    sub:'The assistant tells you how sure it is — and defers when it should. In treasury, a confidently wrong answer can cost millions.',
+    crumb:'Forecast confidence',
+    panel:`
+      <div class="panel">
+        <div class="panel-head"><h3>Cash position forecast</h3><span class="meta">Next 5 business days</span></div>
+        <table>
+          <thead><tr><th>Day</th><th>Projected close</th><th>Confidence</th></tr></thead>
+          <tr><td>Tomorrow</td><td class="num">$46.1M</td><td><span class="pill done">High</span></td></tr>
+          <tr><td>Wed</td><td class="num">$44.8M</td><td><span class="pill done">High</span></td></tr>
+          <tr><td>Thu</td><td class="num">$27.0M</td><td><span class="pill wait">Medium</span></td></tr>
+          <tr><td>Fri</td><td class="num">$33.5M</td><td><span class="pill wait">Low</span></td></tr>
+        </table>
+      </div>`,
+    seed:[
+      { who:'ai', html:`Ask me to forecast and I'll always tell you <strong>how confident I am</strong> — and where I'd rather not guess. That matters more in treasury than sounding certain.` }
+    ],
+    asks:[
+      {
+        label:"What's my position tomorrow?",
+        preamble:'Reconciling scheduled and settled items…',
+        reply:[
+          { who:'user', html:`What's my closing position tomorrow?` },
+          { who:'ai', html:`<strong>$46.1M</strong>, and I'm confident in that. Every item is either settled or a scheduled ACH/wire with a known value — there's no estimation in tomorrow's number.`,
+            card:`<div class="conf">
+                    <div class="bars"><i class="on-green"></i><i class="on-green"></i><i class="on-green"></i><i class="on-green"></i><i class="on-green"></i></div>
+                    <div class="lab green">High confidence · fully settled inputs</div>
+                  </div>` }
+        ]
+      },
+      {
+        label:'And Friday?',
+        preamble:'Assessing inputs for Friday close…',
+        reply:[
+          { who:'user', html:`And Friday's position?` },
+          { who:'ai', html:`Here I'll be honest: <strong>around $33.5M, but low confidence</strong>. Friday depends on a $6.2M ACH receipt with no confirmed settlement time and a customer collection that's been late twice this quarter. I wouldn't fund a decision on Friday's exact number — I'd plan a range.`,
+            card:`<div class="conf">
+                    <div class="bars"><i class="on-amber"></i><i class="on-amber"></i><i></i><i></i><i></i></div>
+                    <div class="lab amber">Low confidence · 2 unconfirmed inputs</div>
+                  </div>` }
+        ]
+      },
+      {
+        label:'Will the Friday ACH clear by 9am?',
+        preamble:'Checking settlement evidence…',
+        reply:[
+          { who:'user', html:`Will the Friday ACH definitely clear before 9am?` },
+          { who:'ai', html:`I won't give you a yes on that — I don't have the originator's settlement confirmation, and ACH timing isn't guaranteed intraday. Rather than guess, I'd suggest checking the receipt status in ACH on Friday morning, or I can set an alert the moment it posts. <strong>That's a question I'd rather defer than answer wrongly.</strong>`,
+            card:`<div class="conf">
+                    <div class="bars"><i></i><i></i><i></i><i></i><i></i></div>
+                    <div class="lab" style="color:var(--slate)">Deferring · no settlement evidence available</div>
+                  </div>` }
+        ]
+      }
+    ]
+  },
+
+  /* ---------------------------------------------------------- 04 JUSTIFIABLE EXPLAINABILITY */
+  {
+    id: 4, key:'explain',
+    chip:'Justifiable Explainability',
+    tag:'04 · Explain',
+    eyebrow:'Dimension 04 — Explainable AI',
+    title:'Justifiable Explainability',
+    sub:'Every answer can be opened up — sources, steps, the rule applied. An answer you can defend to your board, not an oracle you either trust or don\'t.',
+    crumb:'TIR report query',
+    panel:`
+      <div class="panel">
+        <div class="panel-head"><h3>TIR report — May, prior-day composite</h3><span class="meta">Source document · 214 pages</span></div>
+        <table>
+          <thead><tr><th>Line</th><th>Reference</th><th>Amount</th></tr></thead>
+          <tr><td>Total credits, May</td><td style="color:var(--slate)">Table 3, p.108</td><td class="num">$214.6M</td></tr>
+          <tr><td>Total debits, May</td><td style="color:var(--slate)">Table 3, p.108</td><td class="num">$201.2M</td></tr>
+          <tr><td>Fee reversals</td><td style="color:var(--slate)">Note 11, p.142</td><td class="num">$0.34M</td></tr>
+        </table>
+      </div>`,
+    seed:[
+      { who:'ai', html:`Ask me anything from your <strong>TIR reports</strong> and I'll show my work — the page, the table, the calculation. Nothing is a black box.` }
+    ],
+    asks:[
+      {
+        label:'What were net flows in May?',
+        preamble:'Reading the May TIR composite…',
+        reply:[
+          { who:'user', html:`What were my net flows in May?` },
+          { who:'ai', html:`Net positive <strong>$13.4M</strong> in May. Here's exactly how I got there — every figure traces to the report.`,
+            card:`<div class="trace">
+                    <div class="step"><div class="dot"></div><div><b>Total credits $214.6M</b> — Table 3, page 108</div></div>
+                    <div class="step"><div class="dot"></div><div><b>Less total debits $201.2M</b> — Table 3, page 108</div></div>
+                    <div class="step"><div class="dot"></div><div><b>Net = $13.4M</b> — arithmetic, not estimated</div></div>
+                  </div>` }
+        ]
+      },
+      {
+        label:'Show me the source',
+        preamble:'Locating the exact reference…',
+        reply:[
+          { who:'user', html:`Show me where that came from.` },
+          { who:'ai', html:`Both totals sit in <strong>Table 3 on page 108</strong> of your May prior-day composite. The fee-reversal adjustment I mentioned is a separate line in Note 11, page 142 — I didn't fold it into net flows because it's reported below the line. Open page 108?`,
+            card:`<div class="rcard">
+                    <div class="rc-h">Citations <span class="rc-tag">Auditable</span></div>
+                    <div class="rc-row"><span class="k">Credits / Debits</span><span class="v">Table 3 · p.108</span></div>
+                    <div class="rc-row"><span class="k">Fee reversals (excluded)</span><span class="v">Note 11 · p.142</span></div>
+                  </div>` }
+        ]
+      },
+      {
+        label:'Why exclude the fee reversals?',
+        preamble:'Explaining the rule applied…',
+        reply:[
+          { who:'user', html:`Why did you leave the fee reversals out?` },
+          { who:'ai', html:`Because net flows measure money moving in and out — and the report classifies fee reversals as a below-the-line adjustment, not a transaction flow. I applied the report's own classification rather than my own judgement. If you'd rather see an all-in figure including adjustments, it's <strong>$13.74M</strong> — I'll show both so the choice is yours, not mine.` }
+        ]
+      }
+    ]
+  },
+
+  /* ---------------------------------------------------------- 05 AGENT INTEROPERABILITY */
+  {
+    id: 5, key:'agent',
+    chip:'Agent Interoperability',
+    tag:'05 · Interop',
+    eyebrow:'Dimension 05 — Multi-agent systems',
+    title:'Agent Interoperability',
+    sub:'When your treasury system or a third-party agent calls the bank, the assistant is the governed endpoint it reaches — entitlements enforced, every call logged. The bank stays inside your stack, not beneath it.',
+    crumb:'External agent request',
+    panel:`
+      <div class="panel">
+        <div class="panel-head"><h3>Inbound agent request</h3><span class="meta">Treasury management system · automated</span></div>
+        <table>
+          <tr><td style="width:60%"><b>Caller</b><br><span style="font-size:11.5px;color:var(--slate)">Northwind TMS scheduling agent</span></td><td><span class="pill done">Identified</span></td></tr>
+          <tr><td><b>Request</b><br><span style="font-size:11.5px;color:var(--slate)">Initiate $3M wire to known beneficiary</span></td><td><span class="pill wait">Scope check</span></td></tr>
+          <tr><td><b>Delegated scope</b><br><span style="font-size:11.5px;color:var(--slate)">Payments ≤ $5M, known payees only</span></td><td><span class="pill ok">Within limit</span></td></tr>
+        </table>
+      </div>`,
+    seed:[
+      { who:'ai', html:`This one isn't a person typing — your <strong>treasury system's scheduling agent</strong> is calling the bank directly. Watch how the request is governed before anything executes.` }
+    ],
+    asks:[
+      {
+        label:'An external agent just called — what happened?',
+        preamble:'Validating caller identity and token…',
+        reply:[
+          { who:'user', html:`My TMS agent just called the bank. What happened?` },
+          { who:'ai', html:`It reached <strong>me</strong> — not a raw data feed. I verified its identity and the scope your treasurer delegated to it, then logged the call. It asked to initiate a $3M wire to a known beneficiary. That's inside its $5M limit, so it's allowed — but it still goes through the same checks a person would face.`,
+            card:`<div class="agentlog">
+                    <div class="line in"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2 11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg> Request received from Northwind TMS agent</div>
+                    <div class="line gate"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Identity verified · token exchanged · scope checked</div>
+                    <div class="line ok"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg> Within delegated scope · logged for audit</div>
+                  </div>` }
+        ]
+      },
+      {
+        label:'What if it asked for something out of scope?',
+        preamble:'Replaying an over-limit request…',
+        reply:[
+          { who:'user', html:`What if it tried to send $9M instead?` },
+          { who:'ai', html:`I'd stop it. $9M is over the $5M scope your treasurer set for that agent, so I wouldn't execute — I'd return a refusal and route it for human approval. <strong>An agent can only ever do what it's been governed to do</strong>, and the limit is enforced here, at the bank, not in the agent's own code.`,
+            card:`<div class="agentlog">
+                    <div class="line in"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2 11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg> Request: initiate $9.0M wire</div>
+                    <div class="line gate" style="background:var(--red-tint);color:var(--red)"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg> Exceeds delegated scope ($5M) · blocked</div>
+                    <div class="line in"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg> Routed for human approval</div>
+                  </div>` }
+        ]
+      },
+      {
+        label:'Why does this matter?',
+        preamble:null,
+        reply:[
+          { who:'user', html:`Why does this matter to us?` },
+          { who:'ai', html:`Because your clients are already building their own agents. If the bank is just a data feed, those agents route around it and the relationship thins out. If the bank is the <strong>governed endpoint they have to call</strong>, every automated decision still flows through your controls — and the bank stays inside the client's workflow instead of being designed out of it.` }
+        ]
+      }
+    ]
+  },
+
+  /* ---------------------------------------------------------- 06 COLLECTIVE INTELLIGENCE */
+  {
+    id: 6, key:'collective',
+    chip:'Collective Intelligence',
+    tag:'06 · Collective',
+    eyebrow:'Dimension 06 — Collective intelligence',
+    title:'Collective Intelligence',
+    sub:'The assistant knows how comparable companies behave — anonymised, in aggregate. Insight no single treasury, and no standalone tool, could generate alone.',
+    crumb:'Peer benchmarking',
+    panel:`
+      <div class="panel">
+        <div class="panel-head"><h3>Your treasury vs. comparable companies</h3><span class="meta">Anonymised · materials sector · $1–3B revenue</span></div>
+        <table>
+          <thead><tr><th>Practice</th><th>You</th><th>Peer median</th></tr></thead>
+          <tr><td>Idle cash as % of operating</td><td class="num">18%</td><td class="num">11%</td></tr>
+          <tr><td>EUR payables hedged</td><td class="num">0%</td><td class="num">64%</td></tr>
+          <tr><td>Same-day (Instant) payment use</td><td class="num">4%</td><td class="num">19%</td></tr>
+        </table>
+      </div>`,
+    seed:[
+      { who:'ai', html:`I can place your treasury next to <strong>comparable companies</strong> — same sector, same size band, fully anonymised. Not to rank you, but to show where the pattern says there's money on the table.` }
+    ],
+    asks:[
+      {
+        label:'How do we compare on idle cash?',
+        preamble:'Aggregating anonymised peer balances…',
+        reply:[
+          { who:'user', html:`How does our idle cash compare to peers?` },
+          { who:'ai', html:`You're carrying more. <strong>18% of operating cash sits idle for you, versus an 11% median</strong> across comparable materials-sector companies. That gap is roughly $3.4M that peers are putting to work — through sweeps or short-term placement — that you currently aren't.`,
+            card:`<div class="bench">
+                    <div class="b-row"><div class="b-lab"><b>You</b> · 18% idle</div><div class="b-you-mark">+7 pts</div></div>
+                    <div class="b-track"><div class="b-fill you" style="width:0%" data-fill="90"></div></div>
+                    <div class="b-row" style="margin-top:10px"><div class="b-lab">Peer median · 11%</div><div></div></div>
+                    <div class="b-track"><div class="b-fill" style="width:0%" data-fill="55"></div></div>
+                  </div>` }
+        ]
+      },
+      {
+        label:'Where else are we an outlier?',
+        preamble:'Comparing hedging and payment practice…',
+        reply:[
+          { who:'user', html:`Where else are we out of step?` },
+          { who:'ai', html:`Two places stand out. On FX, <strong>64% of comparable companies hedge their EUR payables — you hedge 0%</strong>, which is why that €18M exposure keeps coming up. And on payments, peers settle 19% of eligible volume same-day through Instant Payments; you're at 4%, so you're paying for float you don't need to.`,
+            card:`<div class="rcard">
+                    <div class="rc-h">Outlier practices <span class="rc-tag">vs peer median</span></div>
+                    <div class="rc-row"><span class="k">EUR payables hedged</span><span class="v neg">0% vs 64%</span></div>
+                    <div class="rc-row"><span class="k">Instant Payment adoption</span><span class="v neg">4% vs 19%</span></div>
+                  </div>` }
+        ]
+      },
+      {
+        label:'Is my data shared to do this?',
+        preamble:null,
+        reply:[
+          { who:'user', html:`Are you exposing my data to other clients to do this?` },
+          { who:'ai', html:`No. You only ever see <strong>aggregated medians</strong> across a peer group large enough that no single company is identifiable — and your figures are pooled the same way into others' views. Nobody sees Northwind's positions. The benchmark is the product of many treasuries; none of them is exposed.` }
+        ]
+      }
+    ]
+  },
+
+  /* ---------------------------------------------------------- 07 ADAPTIVE MEMORY */
+  {
+    id: 7, key:'memory',
+    chip:'Adaptive Memory',
+    tag:'07 · Memory',
+    eyebrow:'Dimension 07 — Persistent, episodic memory',
+    title:'Adaptive Memory',
+    sub:'A returning treasurer isn\'t treated like a first-time user. The assistant learns how this specific organisation works — not how a generic treasury should.',
+    crumb:'Personalised continuity',
+    panel:`
+      <div class="panel">
+        <div class="panel-head"><h3>What the assistant has learned about you</h3><span class="meta">Across sessions · this organisation only</span></div>
+        <table>
+          <tr><td><b>Payroll runs the 25th</b><br><span style="font-size:11.5px;color:var(--slate)">You protect a 5-day buffer around it</span></td><td><span class="pill done">Learned</span></td></tr>
+          <tr><td><b>You review wires &gt; $2M personally</b><br><span style="font-size:11.5px;color:var(--slate)">Smaller ones you delegate</span></td><td><span class="pill done">Learned</span></td></tr>
+          <tr><td><b>You distrust Friday ACH timing</b><br><span style="font-size:11.5px;color:var(--slate)">Twice burned this quarter</span></td><td><span class="pill done">Learned</span></td></tr>
+        </table>
+      </div>`,
+    seed:[
+      { who:'ai', html:`Welcome back. I haven't reset — I remember how <strong>your</strong> treasury runs: your payroll cycle, the wire threshold you review personally, and the Friday ACH timing you've learned not to trust.` }
+    ],
+    asks:[
+      {
+        label:'Anything I should look at first?',
+        preamble:'Recalling your routine and priorities…',
+        reply:[
+          { who:'user', html:`What should I look at first today?` },
+          { who:'ai', html:`Payroll's on the 25th — that's four days out — so I've already checked your buffer first, because that's what you do every month. It's protected. The one thing needing you: a <strong>$2.4M wire</strong> is queued, and that's over the threshold where you like to approve personally rather than delegate.`,
+            memnote:`Remembered: you protect a 5-day payroll buffer and personally approve wires over $2M.` }
+        ]
+      },
+      {
+        label:'Did you remember the Friday ACH thing?',
+        preamble:'Applying a learned preference…',
+        reply:[
+          { who:'user', html:`Did you account for the Friday ACH I don't trust?` },
+          { who:'ai', html:`I did. Because that collection has slipped twice this quarter, I <strong>didn't count it in your available position</strong> for Thursday's decision — I treated it as unconfirmed, the way you've told me to. If you'd rather I include it, say so and I'll adjust how I treat it going forward.`,
+            memnote:`Applied automatically: Friday ACH receipts excluded from confirmed position until they post.` }
+        ]
+      },
+      {
+        label:'Forget that I review wires personally',
+        preamble:null,
+        reply:[
+          { who:'user', html:`Actually — stop flagging wires for my personal review. Delegate them all now.` },
+          { who:'ai', html:`Done. I've updated how I treat your team: wires of any size now route to your delegates, and I'll stop surfacing the $2M threshold to you. Memory works both ways — you can correct what I've learned, and this takes effect from now on.`,
+            memnote:`Updated: personal wire-review threshold removed at your request.` }
+        ]
+      }
+    ]
+  }
+];
+
+/* ============================================================
+   RUNTIME
+   ============================================================ */
+let current = 0;          // active dimension index
+let step = 0;             // how many asks consumed in current dim
+let busy = false;
+
+const chat   = document.getElementById('chat');
+const askStack = document.getElementById('askStack');
+const dimbar = document.getElementById('dimbar');
+
+/* build chips */
+DIMENSIONS.forEach((d, i) => {
+  const c = document.createElement('button');
+  c.className = 'dim-chip' + (i===0?' active':'');
+  c.innerHTML = `<span class="n">0${d.id}</span> ${d.chip}`;
+  c.onclick = () => selectDim(i);
+  dimbar.appendChild(c);
+});
+
+function selectDim(i){
+  if (busy) return;
+  current = i; step = 0;
+  document.querySelectorAll('.dim-chip').forEach((c,idx)=>c.classList.toggle('active', idx===i));
+  const d = DIMENSIONS[i];
+  document.getElementById('ws-eyebrow').textContent = d.eyebrow;
+  document.getElementById('ws-title').textContent = d.title;
+  document.getElementById('ws-sub').textContent = d.sub;
+  document.getElementById('dimtag').textContent = d.tag;
+  document.getElementById('crumb-ctx').textContent = d.crumb;
+  document.getElementById('wsPanel').innerHTML = d.panel;
+  renderSeed(d);
+  renderAsks(d);
+}
+
+function renderSeed(d){
+  chat.innerHTML = '';
+  d.seed.forEach(m => chat.appendChild(bubble(m)));
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function bubble(m){
+  const wrap = document.createElement('div');
+  wrap.className = 'msg ' + (m.who==='user'?'user':'ai');
+  const ava = m.who==='user' ? 'DM' : 'AI';
+  let inner = `<div class="ava">${ava}</div><div class="bubble">${m.html}`;
+  if (m.card) inner += m.card;
+  if (m.memnote) inner += `<div class="memnote">${m.memnote}</div>`;
+  inner += `</div>`;
+  wrap.innerHTML = inner;
+  return wrap;
+}
+
+function renderAsks(d){
+  askStack.innerHTML = '';
+  const remaining = d.asks.slice(step);
+  if (remaining.length === 0){
+    document.getElementById('askHint').textContent = 'Scenario complete';
+    const done = document.createElement('div');
+    done.style.cssText = 'font-size:12px;color:var(--slate);text-align:center;padding:6px 0 2px';
+    done.innerHTML = `You've seen <b>${d.chip}</b>. Pick another dimension above, or restart.`;
+    askStack.appendChild(done);
+    return;
+  }
+  document.getElementById('askHint').textContent = step===0 ? 'Try these' : 'Continue';
+  remaining.forEach((a, idx) => {
+    const realIndex = step + idx;
+    const b = document.createElement('button');
+    b.className = 'ask';
+    b.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 8l5 5 5-5"/></svg> ${a.label}`;
+    // only the next-in-sequence is enabled; rest are previewed but disabled to keep the demo linear
+    if (realIndex !== step) b.disabled = true;
+    b.onclick = () => runAsk(d, realIndex);
+    askStack.appendChild(b);
+  });
+}
+
+function runAsk(d, idx){
+  if (busy) return;
+  busy = true;
+  const a = d.asks[idx];
+
+  // user message first
+  const userMsg = a.reply.find(r=>r.who==='user');
+  if (userMsg){ chat.appendChild(bubble(userMsg)); chat.scrollTop = chat.scrollHeight; }
+
+  // disable asks during playback
+  [...askStack.querySelectorAll('.ask')].forEach(b=>b.disabled=true);
+
+  const showAi = () => {
+    // optional preamble
+    if (a.preamble){
+      const pre = document.createElement('div');
+      pre.className = 'msg ai';
+      pre.innerHTML = `<div class="ava">AI</div><div class="bubble"><div class="preamble"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.2-8.5"/></svg>${a.preamble}</div></div>`;
+      chat.appendChild(pre);
+      chat.scrollTop = chat.scrollHeight;
+      setTimeout(()=>{ pre.remove(); typeThenReply(); }, 1100);
+    } else {
+      typeThenReply();
+    }
+  };
+
+  const typeThenReply = () => {
+    const t = document.createElement('div');
+    t.className = 'typing';
+    t.innerHTML = `<div class="ava">AI</div><div class="dots"><i></i><i></i><i></i></div>`;
+    chat.appendChild(t);
+    chat.scrollTop = chat.scrollHeight;
+    setTimeout(()=>{
+      t.remove();
+      const aiMsg = a.reply.find(r=>r.who==='ai');
+      const node = bubble(aiMsg);
+      chat.appendChild(node);
+      chat.scrollTop = chat.scrollHeight;
+      // animate any fills inside the new node
+      requestAnimationFrame(()=> {
+        node.querySelectorAll('[data-fill]').forEach(el=> el.style.width = el.dataset.fill + '%');
+      });
+      // flash a workspace element if referenced
+      if (aiMsg.flash){
+        const el = document.getElementById(aiMsg.flash);
+        if (el){ el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash'); }
+      }
+      step = idx + 1;
+      busy = false;
+      renderAsks(d);
+      chat.scrollTop = chat.scrollHeight;
+    }, 850);
+  };
+
+  setTimeout(showAi, 350);
+}
+
+function resetDim(){ if(!busy) selectDim(current); }
+
+/* init */
+selectDim(0);
+</script>
+</body>
+</html>
