@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AI Assistant — Lending Feature Map</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: #f9fafb;
+    color: #111827;
+    min-height: 100vh;
+    padding: 24px 16px;
+  }
+
+  .container { max-width: 1400px; margin: 0 auto; }
+
+  /* Header */
+  .header { margin-bottom: 20px; }
+  .header h1 { font-size: 20px; font-weight: 700; color: #111827; letter-spacing: -0.3px; }
+  .header p  { font-size: 13px; color: #6b7280; margin-top: 4px; }
+
+  /* Cards */
+  .card {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.06);
+  }
+
+  .card-label {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: #9ca3af;
+    margin-bottom: 12px;
+  }
+
+  /* Pattern legend */
+  .legend-grid { display: flex; flex-wrap: wrap; gap: 16px 24px; }
+  .legend-group-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: #9ca3af;
+    margin-bottom: 6px;
+  }
+  .legend-badges { display: flex; flex-wrap: wrap; gap: 4px; }
+
+  /* Badges / chips */
+  .badge {
+    display: inline-block;
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1.5px solid transparent;
+    transition: box-shadow .15s, border-color .15s, font-weight .1s;
+    white-space: nowrap;
+    user-select: none;
+  }
+  .badge:hover { border-color: rgba(0,0,0,.15); }
+  .badge.active {
+    border-color: #374151;
+    box-shadow: 0 0 0 2px #374151;
+    font-weight: 700;
+  }
+  .badge .count { opacity: .5; margin-left: 2px; }
+
+  /* Product filter bar */
+  .filter-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .filter-label { font-size: 11px; font-weight: 600; color: #9ca3af; }
+  .prod-btn {
+    font-size: 11px;
+    padding: 4px 12px;
+    border-radius: 999px;
+    border: 1px solid #d1d5db;
+    background: #fff;
+    color: #4b5563;
+    cursor: pointer;
+    transition: background .15s, color .15s, border-color .15s;
+  }
+  .prod-btn:hover { border-color: #9ca3af; }
+  .prod-btn.active { background: #1f2937; color: #fff; border-color: #1f2937; }
+
+  .clear-btn {
+    font-size: 11px;
+    color: #3b82f6;
+    background: none;
+    border: none;
+    cursor: pointer;
+    text-decoration: underline;
+    margin-left: 4px;
+  }
+  .clear-btn:hover { color: #1d4ed8; }
+
+  .count-display { font-size: 11px; color: #9ca3af; margin-left: auto; }
+
+  /* Table */
+  .table-wrap {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.06);
+    overflow: hidden;
+  }
+  .table-scroll { overflow-x: auto; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+
+  thead tr { background: #f9fafb; border-bottom: 1px solid #e5e7eb; }
+  th {
+    text-align: left;
+    padding: 10px 14px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .07em;
+    color: #9ca3af;
+    white-space: nowrap;
+  }
+
+  tbody tr { border-bottom: 1px solid #f3f4f6; vertical-align: top; }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: #f9fafb; }
+
+  td { padding: 10px 14px; }
+
+  .td-product { white-space: nowrap; }
+  .td-category { font-size: 11px; color: #6b7280; white-space: nowrap; }
+  .td-name { font-size: 13px; font-weight: 600; color: #1f2937; white-space: nowrap; }
+  .td-what { font-size: 12px; color: #4b5563; line-height: 1.5; max-width: 320px; }
+  .td-patterns { max-width: 280px; }
+  .td-patterns .badges { display: flex; flex-wrap: wrap; gap: 4px; }
+  .td-source { font-size: 11px; color: #9ca3af; line-height: 1.5; max-width: 200px; }
+
+  /* No results */
+  .no-results {
+    display: none;
+    text-align: center;
+    padding: 48px;
+    font-size: 13px;
+    color: #9ca3af;
+  }
+
+  /* Footer */
+  .footer {
+    text-align: center;
+    font-size: 11px;
+    color: #9ca3af;
+    margin-top: 16px;
+  }
+
+  /* ── Product badge colours ── */
+  .prod-cashflow  { background: #dbeafe; color: #1e40af; }
+  .prod-abl       { background: #f3e8ff; color: #6b21a8; }
+  .prod-scf       { background: #d1fae5; color: #065f46; }
+  .prod-equip     { background: #ffedd5; color: #9a3412; }
+  .prod-synd      { background: #ccfbf1; color: #115e59; }
+
+  /* ── Pattern badge colours ── */
+  .pat-dataenvelope         { background: #dbeafe; color: #1d4ed8; }
+  .pat-preamble             { background: #e0f2fe; color: #0369a1; }
+  .pat-sparkle              { background: #cffafe; color: #0e7490; }
+  .pat-nbp                  { background: #dcfce7; color: #15803d; }
+  .pat-nba                  { background: #ecfccb; color: #3f6212; }
+  .pat-fireforget           { background: #ccfbf1; color: #0f766e; }
+  .pat-exceptiondesk        { background: #fef3c7; color: #b45309; }
+  .pat-standingdeliverables { background: #fef9c3; color: #854d0e; }
+  .pat-ambientproactive     { background: #ffedd5; color: #c2410c; }
+  .pat-treasuryplaybooks    { background: #fee2e2; color: #b91c1c; }
+  .pat-crossscreen          { background: #ede9fe; color: #6d28d9; }
+  .pat-explainthisscreen    { background: #f3e8ff; color: #7e22ce; }
+  .pat-inlinecitation       { background: #f1f5f9; color: #475569; }
+  .pat-twosided             { background: #e5e7eb; color: #374151; }
+  .pat-agentfeed            { background: #f4f4f5; color: #52525b; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <h1>AI Assistant — Lending Feature Map</h1>
+    <p id="subtitle">Established AI interaction patterns applied to LoanIQ-backed lending products</p>
+  </div>
+
+  <!-- Pattern legend / filter -->
+  <div class="card">
+    <div class="card-label">Filter by Interaction Pattern</div>
+    <div class="legend-grid" id="legend"></div>
+  </div>
+
+  <!-- Product filter bar -->
+  <div class="filter-bar" id="filter-bar"></div>
+
+  <!-- Table -->
+  <div class="table-wrap">
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>Product</th>
+            <th>Category</th>
+            <th>Feature</th>
+            <th>What the user can do</th>
+            <th>Interaction Patterns Applied</th>
+            <th>LoanIQ Source</th>
+          </tr>
+        </thead>
+        <tbody id="table-body"></tbody>
+      </table>
+      <div class="no-results" id="no-results">No features match the selected filters.</div>
+    </div>
+  </div>
+
+  <div class="footer">
+    Interaction patterns from AI Assistant design work (Cash / Payments / FX / AP-AR domains) — applied here for the first time to LoanIQ-backed lending products
+  </div>
+
+</div>
+<script>
+// ── Data ──────────────────────────────────────────────────────────────────────
+
+const PRODUCTS = [
+  "Cashflow Lending",
+  "ABL",
+  "Supply Chain Finance",
+  "Equipment Finance",
+  "Syndicated Lending"
+];
+
+const PRODUCT_CLASS = {
+  "Cashflow Lending":    "prod-cashflow",
+  "ABL":                 "prod-abl",
+  "Supply Chain Finance":"prod-scf",
+  "Equipment Finance":   "prod-equip",
+  "Syndicated Lending":  "prod-synd"
+};
+
+const PATTERN_CATEGORIES = {
+  "Presentation":  ["DataEnvelope","Preamble-first UX","Inline AI Sparkle"],
+  "Interaction":   ["NBP Chips","Next-best-action Card","Fire-and-forget"],
+  "Proactive":     ["Exception Desk","Standing Deliverables","Ambient Proactive","Treasury Playbooks"],
+  "Context":       ["Cross-screen Continuity","Explain-this-screen"],
+  "Trust & Infra": ["Inline Citation","Two-Sided Endpoint","Agent Activity Feed"]
+};
+
+const PATTERN_CLASS = {
+  "DataEnvelope":          "pat-dataenvelope",
+  "Preamble-first UX":     "pat-preamble",
+  "Inline AI Sparkle":     "pat-sparkle",
+  "NBP Chips":             "pat-nbp",
+  "Next-best-action Card": "pat-nba",
+  "Fire-and-forget":       "pat-fireforget",
+  "Exception Desk":        "pat-exceptiondesk",
+  "Standing Deliverables": "pat-standingdeliverables",
+  "Ambient Proactive":     "pat-ambientproactive",
+  "Treasury Playbooks":    "pat-treasuryplaybooks",
+  "Cross-screen Continuity":"pat-crossscreen",
+  "Explain-this-screen":   "pat-explainthisscreen",
+  "Inline Citation":       "pat-inlinecitation",
+  "Two-Sided Endpoint":    "pat-twosided",
+  "Agent Activity Feed":   "pat-agentfeed"
+};
+
+const FEATURES = [
+  { product:"Cashflow Lending", category:"Visibility", name:"Facility Headroom Snapshot",
+    what:"Ask how much is available on the revolver — committed, drawn, and undrawn amounts narrated in one answer.",
+    patterns:["DataEnvelope","Preamble-first UX","Inline AI Sparkle","NBP Chips"],
+    source:"Facility commitment & availability; Outstanding balances" },
+
+  { product:"Cashflow Lending", category:"Drawdown & Repayment", name:"Drawdown Request Initiation",
+    what:"Start a drawdown conversationally — amount, currency, interest period — with the assistant validating availability before handing off to Loan Portal.",
+    patterns:["Next-best-action Card","Fire-and-forget","Agent Activity Feed"],
+    source:"Facility availability; Outstanding (new drawing)" },
+
+  { product:"Cashflow Lending", category:"Drawdown & Repayment", name:"Rollover / Interest-Period Election",
+    what:"Be reminded a maturing drawing needs rollover and select a new interest period via guided prompt chips.",
+    patterns:["Exception Desk","Standing Deliverables","NBP Chips","Next-best-action Card"],
+    source:"Outstanding maturity dates; interest pricing rules; rate calendar" },
+
+  { product:"Cashflow Lending", category:"Alerts", name:"Rate-Reset Notification",
+    what:"Receive advance notice of upcoming SOFR rate resets and the expected all-in rate for the next period.",
+    patterns:["Ambient Proactive","Standing Deliverables"],
+    source:"Interest pricing rules; rate-setting calendar; Outstanding accruals" },
+
+  { product:"Cashflow Lending", category:"Covenant Management", name:"Covenant Deadline & Headroom Alert",
+    what:"Get reminders that a quarterly compliance certificate is due and see leverage/coverage headroom vs. threshold.",
+    patterns:["Exception Desk","Ambient Proactive","Treasury Playbooks","Standing Deliverables"],
+    source:"Covenant schedule; financial covenant definitions" },
+
+  { product:"Cashflow Lending", category:"Analytics", name:"Interest & Fee Cost Forecast",
+    what:"Ask what the facility will cost next quarter — projected interest plus commitment fees on undrawn amounts, narrated from a deterministic model.",
+    patterns:["DataEnvelope","Preamble-first UX","Inline Citation"],
+    source:"Outstanding accruals; commitment fee accruals; rate data" },
+
+  { product:"Cashflow Lending", category:"Document Q&A", name:"Credit Agreement Q&A",
+    what:"Ask natural-language questions of the credit agreement with cited clauses returned inline, carrying context into any downstream action.",
+    patterns:["Inline Citation","Cross-screen Continuity"],
+    source:"Deal documents (credit agreement)" },
+
+  { product:"ABL", category:"Visibility", name:"Live Borrowing-Base Availability",
+    what:"Ask current ABL availability and see eligible AR + inventory × advance rates minus reserves, narrated before the breakdown renders.",
+    patterns:["DataEnvelope","Inline AI Sparkle","NBP Chips","Preamble-first UX"],
+    source:"Borrowing base certificate data; facility availability; reserves" },
+
+  { product:"ABL", category:"Covenant Management", name:"Borrowing-Base Certificate Reminder",
+    what:"Get alerted that the weekly/monthly certificate is due, with a pre-filled summary of last reported figures and a guided submission playbook.",
+    patterns:["Exception Desk","Standing Deliverables","Treasury Playbooks"],
+    source:"Borrowing base reporting schedule; certificate history" },
+
+  { product:"ABL", category:"Alerts", name:"Excess-Availability / Dominion Trigger Warning",
+    what:"Get warned when availability approaches the threshold that triggers cash dominion or springing covenants.",
+    patterns:["Exception Desk","Ambient Proactive"],
+    source:"Availability vs. trigger thresholds; deal terms" },
+
+  { product:"ABL", category:"Analytics", name:"Eligibility & Dilution Impact Simulator",
+    what:"Ask how rising AR concentration affects availability — see modeled impact of reserve and dilution changes with scenario chips.",
+    patterns:["DataEnvelope","NBP Chips"],
+    source:"Borrowing base components; reserve/advance-rate definitions" },
+
+  { product:"ABL", category:"Drawdown & Repayment", name:"Collateral-Aware Draw Check",
+    what:"Before requesting a draw, confirm it stays within borrowing-base availability — not just facility commitment — with source cited.",
+    patterns:["Next-best-action Card","Inline Citation"],
+    source:"Borrowing base availability; Outstanding balances" },
+
+  { product:"ABL", category:"Visibility", name:"Collateral & Reserve Breakdown",
+    what:"View how eligible AR, inventory, advance rates, and reserves combine into the current base — each component cited to its source.",
+    patterns:["DataEnvelope","Inline AI Sparkle","Inline Citation"],
+    source:"Collateral records; advance rates; reserves" },
+
+  { product:"ABL", category:"Document Q&A", name:"Field-Exam / Appraisal Tracker",
+    what:"Ask when the next field exam or inventory appraisal is scheduled and view past results, with session continuity into the borrowing base screen.",
+    patterns:["Standing Deliverables","Cross-screen Continuity"],
+    source:"Collateral monitoring schedule; deal terms" },
+
+  { product:"Supply Chain Finance", category:"Visibility", name:"Program Utilization Snapshot",
+    what:"Ask how much of the payables-finance program is utilized — program limit, financed amount, and remaining capacity in one narrated answer.",
+    patterns:["DataEnvelope","Inline AI Sparkle","NBP Chips"],
+    source:"Facility/program limit; outstanding financed receivables" },
+
+  { product:"Supply Chain Finance", category:"Drawdown & Repayment", name:"Early-Payment / Discount Decision",
+    what:"Review approved invoices eligible for early payment and trigger a financed early payment — delegated to the SCF portal with HiTL approval.",
+    patterns:["Next-best-action Card","Fire-and-forget"],
+    source:"Outstanding (financed invoices); program terms" },
+
+  { product:"Supply Chain Finance", category:"Analytics", name:"DPO / Working-Capital Impact",
+    what:"Ask how extending payment terms or funding early payments affects days payable outstanding — narrated output from a deterministic model.",
+    patterns:["DataEnvelope","Preamble-first UX","Inline Citation"],
+    source:"Program transaction data; payment schedules" },
+
+  { product:"Supply Chain Finance", category:"Alerts", name:"Supplier Onboarding / Maturity Alert",
+    what:"Be notified when financed payables are maturing or when suppliers complete onboarding — surfaced proactively without querying.",
+    patterns:["Exception Desk","Ambient Proactive"],
+    source:"Payment due dates; program participant data" },
+
+  { product:"Supply Chain Finance", category:"Visibility", name:"Settlement & Reimbursement Schedule",
+    what:"View upcoming dates on which the buyer must reimburse the bank — pushed as a standing delivery at each settlement cycle.",
+    patterns:["DataEnvelope","Standing Deliverables"],
+    source:"Outstanding maturity/settlement dates" },
+
+  { product:"Supply Chain Finance", category:"Document Q&A", name:"Program Terms Q&A",
+    what:"Ask about discount-rate basis, financing margin, or eligibility rules — cited clauses returned inline, session continues into utilization screen.",
+    patterns:["Inline Citation","Cross-screen Continuity"],
+    source:"Program agreement documents" },
+
+  { product:"Equipment Finance", category:"Visibility", name:"Lease/Loan Position Overview",
+    what:"Ask total outstanding on the equipment loan portfolio and see balances, remaining term, and next payment by contract.",
+    patterns:["DataEnvelope","Inline AI Sparkle","NBP Chips"],
+    source:"Outstanding balances; repayment schedule" },
+
+  { product:"Equipment Finance", category:"Analytics", name:"Amortization Schedule Explainer",
+    what:"View principal/interest split and remaining balance for any payment date — narration leads before the schedule table renders.",
+    patterns:["DataEnvelope","Preamble-first UX","Inline Citation"],
+    source:"Repayment/amortization schedule; Outstanding" },
+
+  { product:"Equipment Finance", category:"Drawdown & Repayment", name:"Payoff Quote Request",
+    what:"Ask for an early-payoff amount as of a chosen date — the assistant shows its work via the activity feed then routes the request.",
+    patterns:["Next-best-action Card","Fire-and-forget","Agent Activity Feed"],
+    source:"Outstanding balance; accrued interest; prepayment terms" },
+
+  { product:"Equipment Finance", category:"Alerts", name:"Payment Due / Balloon Reminder",
+    what:"Receive reminders ahead of installment due dates and balloon/residual payments — balloon treated as a high-stakes exception.",
+    patterns:["Standing Deliverables","Exception Desk"],
+    source:"Repayment schedule; balloon/residual terms" },
+
+  { product:"Equipment Finance", category:"Visibility", name:"Schedule-Level Drilldown",
+    what:"Drill into individual equipment schedules under a master lease/loan — session context carries from the portfolio view into the schedule screen.",
+    patterns:["DataEnvelope","Cross-screen Continuity","Inline AI Sparkle"],
+    source:"Facility (master agreement); Outstanding (schedules)" },
+
+  { product:"Equipment Finance", category:"Document Q&A", name:"Lease vs. Finance Terms Q&A",
+    what:"Ask about end-of-term options and maintenance obligations — cited clauses returned inline with an explain-this-screen overlay on the lease summary.",
+    patterns:["Inline Citation","Explain-this-screen"],
+    source:"Contract documents" },
+
+  { product:"Syndicated Lending", category:"Visibility", name:"Single-Touchpoint Facility View",
+    what:"As borrower, get total facility commitment, drawn, and availability across the syndicate in one narrated view.",
+    patterns:["DataEnvelope","Inline AI Sparkle","NBP Chips","Preamble-first UX"],
+    source:"Deal commitment; Facility availability; lender shares" },
+
+  { product:"Syndicated Lending", category:"Drawdown & Repayment", name:"Drawdown Notice Submission",
+    what:"Submit a drawdown notice to the agent conversationally — conditions-precedent checks before the assistant shows routing work and delegates.",
+    patterns:["Next-best-action Card","Fire-and-forget","Agent Activity Feed"],
+    source:"Facility availability; conditions precedent; Outstanding" },
+
+  { product:"Syndicated Lending", category:"Alerts", name:"Rate-Fixing & Interest-Period Notice",
+    what:"Get notified of upcoming rate fixings and interest-period ends with applicable Term SOFR per tranche — deterministic calendar drives the push.",
+    patterns:["Ambient Proactive","Standing Deliverables","Exception Desk"],
+    source:"Rate-setting calendar; interest pricing rules; Outstanding" },
+
+  { product:"Syndicated Lending", category:"Covenant Management", name:"Information-Undertaking Tracker",
+    what:"Track recurring reporting obligations to the agent and receive reminders with a submission playbook — ERP systems can push reports via MCP/A2A.",
+    patterns:["Exception Desk","Standing Deliverables","Treasury Playbooks","Two-Sided Endpoint"],
+    source:"Covenant/reporting schedule; deal terms" },
+
+  { product:"Syndicated Lending", category:"Visibility", name:"Fee & Accrual Statement",
+    what:"Ask for accrued commitment fees, agency fees, and interest by period — narrated before the breakdown renders, each figure cited.",
+    patterns:["DataEnvelope","Inline Citation","Preamble-first UX"],
+    source:"Fee accruals; interest accruals; Outstanding" },
+
+  { product:"Syndicated Lending", category:"Document Q&A", name:"Amendment / Waiver Status",
+    what:"Ask the status of a pending amendment circulating among lenders — monitored as an active exception, session continues into the facility screen.",
+    patterns:["Exception Desk","Cross-screen Continuity","Inline Citation"],
+    source:"Deal amendment records; transaction history" },
+
+  { product:"Syndicated Lending", category:"Analytics", name:"Tranche-Level Exposure Breakdown",
+    what:"View commitment and outstandings by tranche/currency — AI narrates the composition before the breakdown table renders.",
+    patterns:["DataEnvelope","Inline AI Sparkle","Preamble-first UX"],
+    source:"Facility/tranche commitment; Outstanding by currency" }
+];
+
+// ── State ─────────────────────────────────────────────────────────────────────
+
+let selectedProduct = "All";
+let selectedPattern = "All";
+
+// ── Pattern counts ────────────────────────────────────────────────────────────
+
+const patternCounts = {};
+FEATURES.forEach(f => f.patterns.forEach(p => {
+  patternCounts[p] = (patternCounts[p] || 0) + 1;
+}));
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+function makeBadge(text, cssClass, isPattern) {
+  const span = document.createElement("span");
+  span.className = `badge ${cssClass}`;
+  if (isPattern) {
+    span.dataset.value = text;
+    const label = document.createTextNode(text);
+    const count = document.createElement("span");
+    count.className = "count";
+    count.textContent = `(${patternCounts[text] || 0})`;
+    span.appendChild(label);
+    span.appendChild(count);
+    span.addEventListener("click", () => togglePattern(text));
+  } else {
+    span.textContent = text;
+  }
+  return span;
+}
+
+// ── Render legend ─────────────────────────────────────────────────────────────
+
+function renderLegend() {
+  const legend = document.getElementById("legend");
+  legend.innerHTML = "";
+  Object.entries(PATTERN_CATEGORIES).forEach(([cat, patterns]) => {
+    const group = document.createElement("div");
+    const label = document.createElement("div");
+    label.className = "legend-group-label";
+    label.textContent = cat;
+    const badges = document.createElement("div");
+    badges.className = "legend-badges";
+    patterns.forEach(p => badges.appendChild(makeBadge(p, PATTERN_CLASS[p], true)));
+    group.appendChild(label);
+    group.appendChild(badges);
+    legend.appendChild(group);
+  });
+}
+
+// ── Render product filter bar ─────────────────────────────────────────────────
+
+function renderFilterBar() {
+  const bar = document.getElementById("filter-bar");
+  bar.innerHTML = "";
+
+  const lbl = document.createElement("span");
+  lbl.className = "filter-label";
+  lbl.textContent = "Product:";
+  bar.appendChild(lbl);
+
+  ["All", ...PRODUCTS].forEach(p => {
+    const btn = document.createElement("button");
+    btn.className = "prod-btn" + (p === selectedProduct ? " active" : "");
+    btn.dataset.value = p;
+    btn.textContent = p;
+    btn.addEventListener("click", () => { selectedProduct = p; applyFilters(); });
+    bar.appendChild(btn);
+  });
+
+  const clearBtn = document.createElement("button");
+  clearBtn.className = "clear-btn";
+  clearBtn.id = "clear-btn";
+  clearBtn.textContent = "Clear filters";
+  clearBtn.style.display = (selectedProduct !== "All" || selectedPattern !== "All") ? "inline" : "none";
+  clearBtn.addEventListener("click", () => {
+    selectedProduct = "All";
+    selectedPattern = "All";
+    applyFilters();
+  });
+  bar.appendChild(clearBtn);
+
+  const countEl = document.createElement("span");
+  countEl.className = "count-display";
+  countEl.id = "count";
+  countEl.textContent = `${FEATURES.length} of ${FEATURES.length} features`;
+  bar.appendChild(countEl);
+}
+
+// ── Render table rows ─────────────────────────────────────────────────────────
+
+function renderTableRows() {
+  const tbody = document.getElementById("table-body");
+  tbody.innerHTML = "";
+  FEATURES.forEach(f => {
+    const tr = document.createElement("tr");
+    tr.dataset.product = f.product;
+    tr.dataset.patterns = f.patterns.join(",");
+
+    // Product
+    const tdProd = document.createElement("td");
+    tdProd.className = "td-product";
+    const prodBadge = document.createElement("span");
+    prodBadge.className = `badge ${PRODUCT_CLASS[f.product]}`;
+    prodBadge.style.cursor = "default";
+    prodBadge.textContent = f.product;
+    tdProd.appendChild(prodBadge);
+    tr.appendChild(tdProd);
+
+    // Category
+    const tdCat = document.createElement("td");
+    tdCat.className = "td-category";
+    tdCat.textContent = f.category;
+    tr.appendChild(tdCat);
+
+    // Feature name
+    const tdName = document.createElement("td");
+    tdName.className = "td-name";
+    tdName.textContent = f.name;
+    tr.appendChild(tdName);
+
+    // What user can do
+    const tdWhat = document.createElement("td");
+    tdWhat.className = "td-what";
+    tdWhat.textContent = f.what;
+    tr.appendChild(tdWhat);
+
+    // Patterns
+    const tdPat = document.createElement("td");
+    tdPat.className = "td-patterns";
+    const patWrap = document.createElement("div");
+    patWrap.className = "badges";
+    f.patterns.forEach(p => {
+      const b = document.createElement("span");
+      b.className = `badge ${PATTERN_CLASS[p]}`;
+      b.dataset.value = p;
+      b.style.cursor = "pointer";
+      b.textContent = p;
+      b.addEventListener("click", () => togglePattern(p));
+      patWrap.appendChild(b);
+    });
+    tdPat.appendChild(patWrap);
+    tr.appendChild(tdPat);
+
+    // Source
+    const tdSrc = document.createElement("td");
+    tdSrc.className = "td-source";
+    tdSrc.textContent = f.source;
+    tr.appendChild(tdSrc);
+
+    tbody.appendChild(tr);
+  });
+}
+
+// ── Apply filters ─────────────────────────────────────────────────────────────
+
+function applyFilters() {
+  // Rows
+  const rows = document.querySelectorAll("#table-body tr");
+  let count = 0;
+  rows.forEach(row => {
+    const prodMatch = selectedProduct === "All" || row.dataset.product === selectedProduct;
+    const rowPatterns = row.dataset.patterns.split(",");
+    const patMatch = selectedPattern === "All" || rowPatterns.includes(selectedPattern);
+    const show = prodMatch && patMatch;
+    row.style.display = show ? "" : "none";
+    if (show) count++;
+  });
+
+  // Count
+  const countEl = document.getElementById("count");
+  if (countEl) countEl.textContent = `${count} of ${FEATURES.length} features`;
+
+  // Clear button
+  const clearBtn = document.getElementById("clear-btn");
+  if (clearBtn) clearBtn.style.display = (selectedProduct !== "All" || selectedPattern !== "All") ? "inline" : "none";
+
+  // No-results
+  document.getElementById("no-results").style.display = count === 0 ? "block" : "none";
+
+  // Product button active states
+  document.querySelectorAll(".prod-btn").forEach(btn => {
+    btn.classList.toggle("active", btn.dataset.value === selectedProduct);
+  });
+
+  // Pattern badge active states
+  document.querySelectorAll(".badge[data-value]").forEach(badge => {
+    const isActive = badge.dataset.value === selectedPattern;
+    badge.classList.toggle("active", isActive);
+  });
+}
+
+function togglePattern(p) {
+  selectedPattern = selectedPattern === p ? "All" : p;
+  applyFilters();
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+
+renderLegend();
+renderFilterBar();
+renderTableRows();
+applyFilters();
+</script>
+</body>
+</html>
