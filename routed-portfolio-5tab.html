@@ -1,0 +1,1089 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Routed Portfolio — Copilot Agent × Devin · SDLC Flow + Delivery Ecosystem</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0A1424; --panel:#101E33; --panel2:#0C1830;
+    --line:rgba(143,163,191,.18); --text:#E9EEF6; --muted:#8FA3BF;
+    --gold:#D9A93F; --read:#4FC3D9; --write:#E8935A;
+    --copilot:#5D9DFF; --devin:#9B7BEF; --human:#D9A93F;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  @media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}}
+  body{
+    background:var(--bg); color:var(--text);
+    font-family:'IBM Plex Sans',system-ui,-apple-system,Segoe UI,sans-serif;
+    font-size:15px; line-height:1.55;
+    background-image:radial-gradient(1200px 500px at 80% -10%, rgba(93,157,255,.06), transparent 60%),
+                     radial-gradient(900px 500px at 10% 110%, rgba(155,123,239,.07), transparent 60%);
+  }
+  .wrap{max-width:840px;margin:0 auto;padding:40px 18px 64px}
+
+  /* ---------- header ---------- */
+  .eyebrow{
+    font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.22em;
+    color:var(--gold);text-transform:uppercase;margin-bottom:14px;
+  }
+  h1{
+    font-family:'Space Grotesk',sans-serif;font-weight:700;
+    font-size:clamp(30px,6vw,46px);line-height:1.06;letter-spacing:-.01em;
+    margin-bottom:14px;
+  }
+  h1 .thin{color:var(--muted);font-weight:500}
+  .lede{color:var(--muted);max-width:62ch;margin-bottom:8px}
+  .lede b{color:var(--text);font-weight:600}
+  .src{font-family:'IBM Plex Mono',monospace;font-size:11px;color:#5E7392;margin-top:10px}
+
+  /* ---------- tabs ---------- */
+  .tabs{
+    display:flex;flex-wrap:wrap;gap:8px;margin:30px 0 0;border-bottom:1px solid var(--line);padding-bottom:0;
+  }
+  .tab{
+    font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:14px;
+    background:transparent;border:1px solid var(--line);border-bottom:none;
+    color:var(--muted);padding:11px 16px;border-radius:10px 10px 0 0;cursor:pointer;
+    transition:color .15s, background .15s;
+  }
+  .tab .t-sub{
+    display:block;font-family:'IBM Plex Mono',monospace;font-size:9.5px;font-weight:400;
+    letter-spacing:.14em;text-transform:uppercase;margin-top:2px;color:#5E7392;
+  }
+  .tab:hover{color:var(--text)}
+  .tab:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+  .tab.active{
+    color:var(--text);background:var(--panel);border-color:var(--gold);
+    box-shadow:0 -8px 24px rgba(217,169,63,.08);
+  }
+  .tab.active .t-sub{color:var(--gold)}
+  .tabpanel{display:none;animation:fadein .25s ease}
+  .tabpanel.active{display:block}
+  @keyframes fadein{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+  @media (prefers-reduced-motion: reduce){.tabpanel{animation:none}}
+
+  /* ---------- two-tool doctrine ---------- */
+  .doctrine{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:28px 0 8px}
+  @media (max-width:640px){.doctrine{grid-template-columns:1fr}}
+  .d-card{border-radius:14px;padding:16px 18px;border:1px solid var(--line);background:var(--panel2)}
+  .d-card.copilot{border-color:rgba(93,157,255,.4)}
+  .d-card.devin{border-color:rgba(155,123,239,.4)}
+  .d-card h2{
+    font-family:'Space Grotesk',sans-serif;font-size:17px;font-weight:600;margin-bottom:4px;
+    display:flex;align-items:center;gap:9px;
+  }
+  .d-card.copilot h2{color:var(--copilot)}
+  .d-card.devin h2{color:#C3B0F8}
+  .d-dot{width:11px;height:11px;border-radius:50%;flex:0 0 11px}
+  .d-card.copilot .d-dot{background:var(--copilot);box-shadow:0 0 10px rgba(93,157,255,.6)}
+  .d-card.devin .d-dot{background:var(--devin);box-shadow:0 0 10px rgba(155,123,239,.6)}
+  .d-role{
+    font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--muted);margin-bottom:9px;
+  }
+  .d-card p{font-size:13px;color:var(--muted)}
+  .d-card p b{color:var(--text);font-weight:600}
+  .d-cost{
+    margin-top:10px;font-family:'IBM Plex Mono',monospace;font-size:11px;
+    padding-top:9px;border-top:1px dashed var(--line);color:var(--muted);
+  }
+
+  /* ---------- chips ---------- */
+  .chip{
+    display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:11.5px;font-weight:500;
+    padding:3px 9px;border-radius:6px;border:1px solid;white-space:nowrap;
+  }
+  .c-copilot{color:var(--copilot);border-color:rgba(93,157,255,.5);background:rgba(93,157,255,.08)}
+  .c-devin{color:#0A1424;border-color:var(--devin);background:var(--devin)}
+  .c-devinlite{color:#C3B0F8;border-color:rgba(155,123,239,.5);background:transparent;border-style:dashed}
+  .c-human{color:#0A1424;border-color:var(--gold);background:var(--gold);font-weight:600}
+  .c-platform{color:var(--gold);border-color:rgba(217,169,63,.5);background:rgba(217,169,63,.08)}
+  .cost{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted)}
+
+  /* ---------- rail / flow (shared by both tabs) ---------- */
+  .flow{position:relative;margin-top:26px;padding-left:30px}
+  .flow::before{
+    content:'';position:absolute;left:9px;top:8px;bottom:8px;width:2px;border-radius:2px;
+    background:linear-gradient(180deg,
+      var(--read) 0%, var(--read) 34%,
+      var(--gold) 42%, var(--gold) 50%,
+      var(--write) 58%, var(--write) 100%);
+    opacity:.85;
+  }
+  .flow.eco::before{
+    background:linear-gradient(180deg,
+      var(--devin) 0%, var(--devin) 30%,
+      var(--gold) 40%, var(--gold) 52%,
+      var(--copilot) 62%, var(--copilot) 100%);
+  }
+  .zone{
+    font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;
+    margin:26px 0 12px;padding:7px 12px;border-radius:7px;display:inline-block;position:relative;
+  }
+  .zone.read{color:var(--read);border:1px solid rgba(79,195,217,.4);background:rgba(79,195,217,.07)}
+  .zone.write{color:var(--write);border:1px solid rgba(232,147,90,.4);background:rgba(232,147,90,.07)}
+  .zone.violet{color:#C3B0F8;border:1px solid rgba(155,123,239,.4);background:rgba(155,123,239,.07)}
+  .zone.blue{color:var(--copilot);border:1px solid rgba(93,157,255,.4);background:rgba(93,157,255,.07)}
+  .zone::before{
+    content:'';position:absolute;left:-26px;top:50%;transform:translateY(-50%);
+    width:10px;height:10px;border-radius:50%;
+  }
+  .zone.read::before{background:var(--read);box-shadow:0 0 10px rgba(79,195,217,.7)}
+  .zone.write::before{background:var(--write);box-shadow:0 0 10px rgba(232,147,90,.7)}
+  .zone.violet::before{background:var(--devin);box-shadow:0 0 10px rgba(155,123,239,.7)}
+  .zone.blue::before{background:var(--copilot);box-shadow:0 0 10px rgba(93,157,255,.7)}
+
+  .stage{
+    position:relative;background:var(--panel);border:1px solid var(--line);
+    border-radius:14px;padding:18px 18px 14px;margin-bottom:16px;
+  }
+  .stage::before{
+    content:'';position:absolute;left:-26px;top:26px;width:10px;height:10px;border-radius:50%;
+    background:var(--bg);border:2px solid var(--muted);
+  }
+  .read-zone .stage::before{border-color:var(--read)}
+  .write-zone .stage::before{border-color:var(--write)}
+  .violet-zone .stage::before{border-color:var(--devin)}
+  .blue-zone .stage::before{border-color:var(--copilot)}
+
+  .stage-head{display:flex;align-items:baseline;gap:12px;margin-bottom:4px;flex-wrap:wrap}
+  .stage-num{
+    font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:13px;color:var(--muted);
+    letter-spacing:.08em;
+  }
+  .stage h3{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:19px;letter-spacing:-.01em}
+  .stage-why{color:var(--muted);font-size:13px;margin-bottom:12px}
+
+  .task{padding:10px 0;border-top:1px dashed var(--line)}
+  .task-name{font-weight:500;font-size:14px;margin-bottom:5px}
+  .task-route{display:flex;flex-wrap:wrap;align-items:center;gap:7px}
+  .arrow{color:#5E7392;font-family:'IBM Plex Mono',monospace;font-size:12px}
+  .plus{color:#5E7392;font-family:'IBM Plex Mono',monospace;font-size:11px}
+
+  .avoid{
+    margin-top:12px;padding:9px 12px;border-radius:8px;font-size:12.5px;
+    border:1px solid rgba(232,130,90,.35);background:rgba(232,130,90,.06);color:#EBB49A;
+  }
+  .avoid b{color:#F3C9B4}
+
+  /* ---------- handoff + gate ---------- */
+  .handoff{
+    position:relative;border:1.5px dashed rgba(79,195,217,.5);border-radius:14px;
+    padding:16px 18px;margin:4px 0 16px;background:rgba(79,195,217,.04);
+  }
+  .handoff::before{
+    content:'';position:absolute;left:-26px;top:24px;width:10px;height:10px;border-radius:2px;
+    background:var(--read);transform:rotate(45deg);
+  }
+  .handoff h4,.gate h4{
+    font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.2em;text-transform:uppercase;
+    margin-bottom:8px;
+  }
+  .handoff h4{color:var(--read)}
+  .handoff p{font-size:13.5px;color:var(--muted)}
+  .handoff p b{color:var(--text);font-weight:600}
+  .handoff .files{margin-top:9px;display:flex;flex-wrap:wrap;gap:7px}
+  .file{
+    font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--read);
+    border:1px solid rgba(79,195,217,.4);border-radius:6px;padding:3px 8px;background:rgba(79,195,217,.06);
+  }
+  .handoff.violet{border-color:rgba(155,123,239,.5);background:rgba(155,123,239,.05)}
+  .handoff.violet::before{background:var(--devin)}
+  .handoff.violet h4{color:#C3B0F8}
+  .handoff.violet .file{color:#C3B0F8;border-color:rgba(155,123,239,.4);background:rgba(155,123,239,.06)}
+
+  .gate{
+    position:relative;border:1.5px solid var(--gold);border-radius:14px;
+    padding:16px 18px;margin:0 0 16px;
+    background:linear-gradient(180deg, rgba(217,169,63,.12), rgba(217,169,63,.05));
+    box-shadow:0 0 30px rgba(217,169,63,.10);
+  }
+  .gate::before{
+    content:'';position:absolute;left:-29px;top:22px;width:16px;height:16px;border-radius:50%;
+    background:var(--gold);box-shadow:0 0 14px rgba(217,169,63,.8);
+  }
+  .gate h4{color:var(--gold)}
+  .gate p{font-size:13.5px;color:#E7D9B4}
+  .gate p b{color:#F5E7C0}
+
+  /* ---------- split rule / panels ---------- */
+  .splitrule{
+    margin-top:34px;border:1px solid var(--line);border-radius:14px;padding:18px;background:var(--panel2);
+  }
+  .splitrule h4{
+    font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.18em;text-transform:uppercase;
+    color:var(--gold);margin-bottom:12px;
+  }
+  .rule-row{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-top:1px dashed var(--line);font-size:13.5px}
+  .rule-row:first-of-type{border-top:none}
+  .rule-q{color:var(--muted);flex:1}
+  .rule-q b{color:var(--text);font-weight:600}
+
+  .telemetry{
+    margin-top:14px;border:1px solid var(--line);border-radius:14px;padding:16px 18px;background:var(--panel2);
+  }
+  .telemetry h4{
+    font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.18em;text-transform:uppercase;
+    color:var(--gold);margin-bottom:8px;
+  }
+  .telemetry p{font-size:13.5px;color:var(--muted)}
+  .telemetry p b{color:var(--text);font-weight:600}
+
+  /* ---------- ecosystem-specific ---------- */
+  .appgrid{
+    margin-top:12px;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;
+  }
+  @media (max-width:560px){.appgrid{grid-template-columns:1fr 1fr}}
+  .app{
+    border:1px solid var(--line);border-radius:9px;padding:9px 10px;background:rgba(255,255,255,.02);
+  }
+  .app .a-name{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text)}
+  .app .a-tier{font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;margin-top:3px}
+  .app.t1 .a-tier{color:var(--devin)}
+  .app.t2 .a-tier{color:var(--copilot)}
+  .app.t3 .a-tier{color:var(--muted)}
+  .app.t1{border-color:rgba(155,123,239,.45)}
+  .app.t2{border-color:rgba(93,157,255,.4)}
+
+  .opmodel{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
+  @media (max-width:640px){.opmodel{grid-template-columns:1fr}}
+  .op-card{border:1px solid var(--line);border-radius:14px;padding:16px 18px;background:var(--panel2)}
+  .op-card h4{
+    font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.18em;text-transform:uppercase;margin-bottom:10px;
+  }
+  .op-card.violet h4{color:#C3B0F8}
+  .op-card.blue h4{color:var(--copilot)}
+  .op-card ul{list-style:none}
+  .op-card li{
+    font-size:13.5px;color:var(--muted);padding:6px 0 6px 18px;position:relative;
+    border-top:1px dashed var(--line);
+  }
+  .op-card li:first-of-type{border-top:none}
+  .op-card li::before{content:'—';position:absolute;left:0;color:#5E7392}
+  .op-card li b{color:var(--text);font-weight:600}
+
+  .footnote{
+    margin-top:26px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:#5E7392;line-height:1.7;
+  }
+
+  /* ---------- RTB / CTB additions ---------- */
+  :root{ --rtb:#5FD08C; --ctb:#E8B44F; }
+  .zone.green{color:var(--rtb);border:1px solid rgba(95,208,140,.4);background:rgba(95,208,140,.07)}
+  .zone.green::before{background:var(--rtb);box-shadow:0 0 10px rgba(95,208,140,.7)}
+  .green-zone .stage::before{border-color:var(--rtb)}
+  .zone.amber{color:var(--ctb);border:1px solid rgba(232,180,79,.4);background:rgba(232,180,79,.07)}
+  .zone.amber::before{background:var(--ctb);box-shadow:0 0 10px rgba(232,180,79,.7)}
+  .amber-zone .stage::before{border-color:var(--ctb)}
+  .flow.rtb::before{
+    background:linear-gradient(180deg,
+      var(--rtb) 0%, var(--rtb) 40%,
+      var(--gold) 48%, var(--gold) 56%,
+      var(--copilot) 64%, var(--copilot) 100%);
+  }
+  .flow.ctb::before{
+    background:linear-gradient(180deg,
+      var(--ctb) 0%, var(--ctb) 30%,
+      var(--gold) 40%, var(--gold) 50%,
+      var(--devin) 60%, var(--devin) 100%);
+  }
+  .assume{
+    margin:26px 0 8px;border:1px solid var(--line);border-radius:14px;padding:16px 18px;background:var(--panel2);
+  }
+  .assume h4{
+    font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.18em;text-transform:uppercase;
+    color:var(--muted);margin-bottom:10px;
+  }
+  .assume h4 b{color:var(--gold);font-weight:500}
+  .assume ul{list-style:none}
+  .assume li{
+    font-size:13px;color:var(--muted);padding:6px 0 6px 18px;position:relative;border-top:1px dashed var(--line);
+  }
+  .assume li:first-of-type{border-top:none}
+  .assume li::before{content:'▹';position:absolute;left:0;color:#5E7392}
+  .assume li b{color:var(--text);font-weight:600}
+  .persona{
+    display:flex;flex-wrap:wrap;gap:7px;margin-bottom:10px;
+  }
+  .p-chip{
+    font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.06em;
+    padding:4px 9px;border-radius:6px;border:1px solid var(--line);color:var(--muted);background:rgba(255,255,255,.02);
+  }
+  .p-chip b{color:var(--text);font-weight:500}
+  .shift{
+    margin-top:12px;padding:9px 12px;border-radius:8px;font-size:12.5px;
+    border:1px solid rgba(95,208,140,.3);background:rgba(95,208,140,.05);color:#A9DFC0;
+  }
+  .shift b{color:#C9EDD8}
+  .shift.amber{border-color:rgba(232,180,79,.3);background:rgba(232,180,79,.05);color:#E9D3A4}
+  .shift.amber b{color:#F3E3BE}
+
+  /* ---------- playbook tab ---------- */
+  .pb-lede{color:var(--muted);font-size:13.5px;margin:26px 0 16px;max-width:70ch}
+  .pb-lede b{color:var(--text);font-weight:600}
+  .pb-head,.pb-row{
+    display:grid;grid-template-columns:1.15fr 1fr 1.45fr 1.65fr;
+    border:1px solid var(--line);border-top:none;background:var(--panel);
+  }
+  .pb-head{border-top:1px solid var(--line);border-radius:12px 12px 0 0;background:var(--panel2)}
+  .pb-row:last-of-type{border-radius:0 0 12px 12px}
+  .pb-cell{padding:12px 14px;border-left:1px dashed var(--line);font-size:13px;color:var(--muted);line-height:1.5}
+  .pb-cell:first-child{border-left:none}
+  .pb-head .pb-cell{
+    font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--gold);border-left-style:solid;padding:10px 14px;
+  }
+  .pb-step{font-weight:600;color:var(--text);font-size:13.5px}
+  .pb-tool{display:flex;flex-direction:column;gap:3px;justify-content:center}
+  .pb-tool .t-name{font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:12px;letter-spacing:.04em}
+  .pb-tool .t-mode{font-size:11.5px;color:var(--muted)}
+  .pb-cell.pb-tool.copilot{background:rgba(93,157,255,.07)}
+  .pb-cell.pb-tool.copilot .t-name{color:var(--copilot)}
+  .pb-cell.pb-tool.devin{background:rgba(155,123,239,.09)}
+  .pb-cell.pb-tool.devin .t-name{color:#C3B0F8}
+  .pb-use{color:var(--text)}
+  .pb-gaterow{
+    border:1px solid var(--gold);border-top:none;
+    background:linear-gradient(180deg, rgba(217,169,63,.14), rgba(217,169,63,.06));
+    color:#E7D9B4;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.06em;
+    padding:11px 14px;text-align:center;
+  }
+  .pb-gaterow b{color:var(--gold);font-weight:600}
+  .pb-label{display:none}
+  .pb-note{
+    margin-top:14px;border:1px solid var(--line);border-radius:12px;padding:14px 16px;
+    background:var(--panel2);font-size:12.5px;color:var(--muted);
+  }
+  .pb-note b{color:var(--text);font-weight:600}
+  @media (max-width:720px){
+    .pb-head{display:none}
+    .pb-row{grid-template-columns:1fr;border-top:1px solid var(--line);border-radius:12px;margin-bottom:10px}
+    .pb-cell{border-left:none;border-top:1px dashed var(--line);padding:10px 14px}
+    .pb-cell:first-child{border-top:none}
+    .pb-label{
+      display:block;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.16em;
+      text-transform:uppercase;color:#5E7392;margin-bottom:4px;
+    }
+    .pb-gaterow{border-top:1px solid var(--gold);border-radius:12px;margin-bottom:10px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="eyebrow">SDLC Sub-Task Routing · Two-Tool Doctrine · Copilot Agent × Devin</div>
+  <h1>The Routed Portfolio<br><span class="thin">two tools · one gate · many apps</span></h1>
+  <p class="lede"><b>The Playbook</b> is the quick lookup — each SDLC step, the tool, what to use it for, and how. <b>The Routed Ticket</b> is the anatomy behind it; <b>the Ecosystem</b> wires the portfolio once; <b>RTB</b> and <b>CTB</b> apply the doctrine to the two operating modes.</p>
+  <div class="src">SOURCE · Sub-Task-Level Orchestration report · Jul 2026 · fig. routed-sdlc/v5 · playbook + two-tool + ecosystem + RTB/CTB</div>
+
+  <div class="tabs" role="tablist">
+    <button class="tab active" id="tabbtn-playbook" role="tab" aria-selected="true" aria-controls="tab-playbook" onclick="showTab('playbook')">The Playbook<span class="t-sub">step · tool · what for · how</span></button>
+    <button class="tab" id="tabbtn-flow" role="tab" aria-selected="false" aria-controls="tab-flow" onclick="showTab('flow')">The Routed Ticket<span class="t-sub">per-change SDLC flow</span></button>
+    <button class="tab" id="tabbtn-eco" role="tab" aria-selected="false" aria-controls="tab-eco" onclick="showTab('eco')">The Delivery Ecosystem<span class="t-sub">portfolio setup · runs once</span></button>
+    <button class="tab" id="tabbtn-rtb" role="tab" aria-selected="false" aria-controls="tab-rtb" onclick="showTab('rtb')">Run the Bank<span class="t-sub">stability · interrupt-driven</span></button>
+    <button class="tab" id="tabbtn-ctb" role="tab" aria-selected="false" aria-controls="tab-ctb" onclick="showTab('ctb')">Change the Bank<span class="t-sub">roadmap · spec-driven</span></button>
+  </div>
+
+  <!-- ============================================================= -->
+  <!-- ======================= TAB 1 · FLOW ======================== -->
+  <!-- ============================================================= -->
+  <!-- ============================================================= -->
+  <!-- ==================== TAB 0 · THE PLAYBOOK =================== -->
+  <!-- ============================================================= -->
+  <div class="tabpanel active" id="tab-playbook" role="tabpanel" aria-labelledby="tabbtn-playbook">
+
+  <p class="pb-lede"><b>One primary tool per step.</b> Blue cells are Copilot, violet cells are Devin. Exceptions, cost glyphs and guardrails live in <b>The Routed Ticket</b> tab; the split rule decides borderline cases at the gate.</p>
+
+  <div class="pb-head">
+    <div class="pb-cell">SDLC step</div>
+    <div class="pb-cell">Tool</div>
+    <div class="pb-cell">Use it for</div>
+    <div class="pb-cell">How to use it</div>
+  </div>
+
+  <div class="pb-row">
+    <div class="pb-cell pb-step"><span class="pb-label">SDLC step</span>01 · Understand &amp; assess impact</div>
+    <div class="pb-cell pb-tool devin"><span class="pb-label">Tool</span><span class="t-name">DEVIN</span><span class="t-mode">Wiki · Search · DeepWiki (¢ read-only)</span></div>
+    <div class="pb-cell pb-use"><span class="pb-label">Use it for</span>Architecture maps · dependency tracing · “what calls this, what breaks” Q&amp;A</div>
+    <div class="pb-cell"><span class="pb-label">How to use it</span>Ask the auto-indexed wiki in plain language; verify cited answers against source. Never an ACU session for analysis.</div>
+  </div>
+
+  <div class="pb-row">
+    <div class="pb-cell pb-step"><span class="pb-label">SDLC step</span>02 · Plan &amp; spec the change</div>
+    <div class="pb-cell pb-tool copilot"><span class="pb-label">Tool</span><span class="t-name">COPILOT</span><span class="t-mode">Plan Mode</span></div>
+    <div class="pb-cell pb-use"><span class="pb-label">Use it for</span>Options &amp; trade-offs · spec / plan / tasks artifact · machine-checkable acceptance criteria</div>
+    <div class="pb-cell"><span class="pb-label">How to use it</span>Run in the repo; PO co-authors; save as versioned markdown — this artifact is what the gate reviews.</div>
+  </div>
+
+  <div class="pb-gaterow">◉ <b>HUMAN GATE</b> — approve the plan · pick the executor below · attach an ACU budget if Devin</div>
+
+  <div class="pb-row" style="border-top:1px solid var(--line)">
+    <div class="pb-cell pb-step"><span class="pb-label">SDLC step</span>03a · Build — everyday change</div>
+    <div class="pb-cell pb-tool copilot"><span class="pb-label">Tool</span><span class="t-name">COPILOT</span><span class="t-mode">Agent mode · Coding agent</span></div>
+    <div class="pb-cell pb-use"><span class="pb-label">Use it for</span>Feature work &amp; refactors on the approved plan · well-specified backlog tickets</div>
+    <div class="pb-cell"><span class="pb-label">How to use it</span>Supervise edits live in the IDE — or assign the issue to the coding agent and review the PR it returns.</div>
+  </div>
+
+  <div class="pb-row">
+    <div class="pb-cell pb-step"><span class="pb-label">SDLC step</span>03b · Build — repetitive volume</div>
+    <div class="pb-cell pb-tool devin"><span class="pb-label">Tool</span><span class="t-name">DEVIN</span><span class="t-mode">ACU sessions ($$$ capped)</span></div>
+    <div class="pb-cell pb-use"><span class="pb-label">Use it for</span>Migrations · dependency / EOL upgrades · framework bumps across many modules</div>
+    <div class="pb-cell"><span class="pb-label">How to use it</span>Decompose into uniform subtasks → playbook → pilot 10–20 → scale parallel sessions under a cap; CI verifies every PR.</div>
+  </div>
+
+  <div class="pb-row">
+    <div class="pb-cell pb-step"><span class="pb-label">SDLC step</span>04 · Test the change</div>
+    <div class="pb-cell pb-tool copilot"><span class="pb-label">Tool</span><span class="t-name">COPILOT</span><span class="t-mode">Agent mode</span></div>
+    <div class="pb-cell pb-use"><span class="pb-label">Use it for</span>Unit &amp; integration tests for this change (bulk coverage = Devin campaign)</div>
+    <div class="pb-cell"><span class="pb-label">How to use it</span>Generate tests alongside the code; engineer reviews. Keep CI trustworthy — it is the judge.</div>
+  </div>
+
+  <div class="pb-row">
+    <div class="pb-cell pb-step"><span class="pb-label">SDLC step</span>05 · Fix defects</div>
+    <div class="pb-cell pb-tool copilot"><span class="pb-label">Tool</span><span class="t-name">COPILOT</span><span class="t-mode">Agent mode</span></div>
+    <div class="pb-cell pb-use"><span class="pb-label">Use it for</span>Individual fixes &amp; root-cause (batch remediation = Devin campaign)</div>
+    <div class="pb-cell"><span class="pb-label">How to use it</span>Reproduce and fix supervised in the IDE; if the cause is unclear, ask Devin Search first, then fix.</div>
+  </div>
+
+  <div class="pb-row">
+    <div class="pb-cell pb-step"><span class="pb-label">SDLC step</span>06 · Review &amp; merge</div>
+    <div class="pb-cell pb-tool copilot"><span class="pb-label">Tool</span><span class="t-name">COPILOT + HUMAN</span><span class="t-mode">Code review · branch protection</span></div>
+    <div class="pb-cell pb-use"><span class="pb-label">Use it for</span>First-pass AI review on every PR · Devin Review seconds Devin-authored PRs</div>
+    <div class="pb-cell"><span class="pb-label">How to use it</span>AI comments first; a human approves under branch protection — no exceptions, either lane.</div>
+  </div>
+
+  <div class="pb-row">
+    <div class="pb-cell pb-step"><span class="pb-label">SDLC step</span>07 · Document</div>
+    <div class="pb-cell pb-tool devin"><span class="pb-label">Tool</span><span class="t-name">DEVIN</span><span class="t-mode">Wiki auto-refresh (¢)</span></div>
+    <div class="pb-cell pb-use"><span class="pb-label">Use it for</span>Repo docs stay current · runbooks &amp; change docs drafted by Copilot</div>
+    <div class="pb-cell"><span class="pb-label">How to use it</span>A CI hook re-indexes the wiki on merge; spot-check generated pages against source.</div>
+  </div>
+
+  <div class="pb-note"><b>Reading the fork:</b> Build is the one step with two honest answers — 03a stays supervised with Copilot; 03b earns Devin only when the work is specified, machine-verifiable and high-volume. Any doubt → the split rule in The Routed Ticket tab.</div>
+
+  </div><!-- /tab-playbook -->
+
+  <div class="tabpanel" id="tab-flow" role="tabpanel" aria-labelledby="tabbtn-flow">
+
+  <div class="doctrine">
+    <div class="d-card copilot">
+      <h2><span class="d-dot"></span>GitHub Copilot · Agent mode</h2>
+      <div class="d-role">The default executor · every engineer</div>
+      <p><b>Human-in-the-loop, in-flow, governed.</b> Plan Mode → agent-mode edits → coding-agent PRs, all inside branch protection and PR review. Wins wherever the engineer stays in the loop.</p>
+      <div class="d-cost">$ seat + credits · completions free of credits · predictable floor</div>
+    </div>
+    <div class="d-card devin">
+      <h2><span class="d-dot"></span>Devin</h2>
+      <div class="d-role">The escalation tier · gated access</div>
+      <p><b>Two faces:</b> comprehension products (Devin Search · Wiki · DeepWiki — cheap, read-only) and autonomous ACU sessions (expensive, parallel) reserved for specified, verifiable, high-volume work.</p>
+      <div class="d-cost">¢ comprehension · $$$ ACU sessions, no ceiling — budget-capped</div>
+    </div>
+  </div>
+
+  <div class="flow">
+
+    <div class="read-zone">
+      <div class="zone read">Read-only zone · low blast radius · least-privilege tokens</div>
+
+      <div class="stage">
+        <div class="stage-head"><span class="stage-num">01</span><h3>Comprehension &amp; Impact Analysis</h3></div>
+        <div class="stage-why">Devin's cheap comprehension layer maps the terrain; Copilot's Plan Mode grounds it in the working repo. No ACU sessions here.</div>
+
+        <div class="task">
+          <div class="task-name">Codebase architecture map &amp; dependency tracing</div>
+          <div class="task-route"><span class="arrow">→</span><span class="chip c-devinlite">Devin Wiki · DeepWiki</span><span class="cost">¢ · auto-indexed · verify outputs</span></div>
+        </div>
+        <div class="task">
+          <div class="task-name">Targeted “what calls this / what breaks” Q&amp;A</div>
+          <div class="task-route"><span class="arrow">→</span><span class="chip c-devinlite">Devin Search</span><span class="cost">¢ · cited answers</span></div>
+        </div>
+        <div class="task">
+          <div class="task-name">In-repo impact check against the actual working branch</div>
+          <div class="task-route"><span class="arrow">→</span><span class="chip c-copilot">Copilot · Plan Mode</span><span class="cost">$ · grounded in the checkout</span></div>
+        </div>
+        <div class="task">
+          <div class="task-name">Impact-analysis narrative for the change record</div>
+          <div class="task-route"><span class="arrow">→</span><span class="chip c-copilot">Copilot · agent mode</span><span class="cost">$ · doubles as audit artifact</span></div>
+        </div>
+
+        <div class="avoid"><b>Anti-pattern:</b> spinning up a Devin ACU session for open-ended analysis — most expensive, least predictable mode (Answer.AI: 3/20 on unfamiliar-codebase tasks).</div>
+      </div>
+
+      <div class="stage">
+        <div class="stage-head"><span class="stage-num">02</span><h3>Design &amp; Planning</h3></div>
+        <div class="stage-why">Low-token, high-leverage. The plan artifact is the contract that decides which executor gets the work.</div>
+
+        <div class="task">
+          <div class="task-name">Solution options &amp; trade-off analysis</div>
+          <div class="task-route"><span class="arrow">→</span><span class="chip c-copilot">Copilot · Plan Mode</span><span class="cost">$ · reviewable plan</span></div>
+        </div>
+        <div class="task">
+          <div class="task-name">Spec &amp; task decomposition <span class="cost">(spec.md → plan.md → tasks.md)</span></div>
+          <div class="task-route"><span class="arrow">→</span><span class="chip c-copilot">Copilot · Plan Mode</span><span class="cost">$ · versioned Markdown</span></div>
+        </div>
+        <div class="task">
+          <div class="task-name">Batch-work playbook <span class="cost">(only if a Devin campaign is coming)</span></div>
+          <div class="task-route"><span class="arrow">→</span><span class="chip c-devinlite">Devin · Knowledge / Playbooks</span><span class="cost">¢ · fixed cost, reused per subtask</span></div>
+        </div>
+      </div>
+
+      <div class="handoff">
+        <h4>◇ Handoff artifact — the contract between zones</h4>
+        <p><b>Durable, diffable, queryable — never a raw context dump.</b> The same artifact serves both executors: Copilot consumes it as the approved plan in-repo; Devin consumes it as the session brief + playbook. AGENTS.md carries org guardrails to both.</p>
+        <div class="files">
+          <span class="file">spec.md</span><span class="file">plan.md</span><span class="file">tasks.md</span><span class="file">impact-analysis.md</span><span class="file">AGENTS.md</span><span class="file">MCP: DeepWiki</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="gate">
+      <h4>◉ Human Gate — plan approval &amp; executor decision</h4>
+      <p><b>An engineer approves the artifact AND picks the executor before anything writes code.</b> Interactive change → Copilot. Specified, verifiable, high-volume batch → Devin, with an ACU budget attached. This gate is also the regulated change-management record.</p>
+    </div>
+
+    <div class="write-zone">
+      <div class="zone write">Write zone · governed · branch protection · PR review · agent identity</div>
+
+      <div class="stage">
+        <div class="stage-head"><span class="stage-num">03</span><h3>Implementation</h3></div>
+        <div class="stage-why">The fork in the road: engineer-supervised change vs. autonomous batch campaign. Volume and verifiability decide, not preference.</div>
+
+        <div class="task">
+          <div class="task-name">Feature work &amp; changes on the approved plan</div>
+          <div class="task-route"><span class="arrow">→</span><span class="chip c-copilot">Copilot · agent mode</span><span class="cost">$ · engineer in the loop</span></div>
+        </div>
+        <div class="task">
+          <div class="task-name">Well-specified backlog tickets → branch + PR</div>
+          <div class="task-route"><span class="arrow">→</span><span class="chip c-copilot">Copilot · coding agent</span><span class="cost">$ · async, ephemeral Actions env</span></div>
+        </div>
+        <div class="task">
+          <div class="task-name">Patterned high-volume campaigns <span class="cost">(migrations · dep upgrades · framework bumps)</span></div>
+          <div class="task-route"><span class="arrow">→</span><span class="chip c-devin">Devin · parallel sessions</span><span class="cost">$$$ ACU · playbook-driven · its proven sweet spot</span></div>
+        </div>
+        <div class="task">
+          <div class="task-name">Boilerplate &amp; inline completion</div>
+          <div class="task-route"><span class="arrow">→</span><span class="chip c-copilot">Copilot · completions</span><span class="cost">free of credits</span></div>
+        </div>
+      </div>
+
+      <div class="stage">
+        <div class="stage-head"><span class="stage-num">04</span><h3>Test Generation</h3></div>
+        <div class="stage-why">Same fork: tests for the change stay with the engineer; coverage at scale is a batch campaign.</div>
+
+        <div class="task">
+          <div class="task-name">Unit &amp; integration tests for this change</div>
+          <div class="task-route"><span class="arrow">→</span><span class="chip c-copilot">Copilot · agent mode</span><span class="cost">$</span></div>
+        </div>
+        <div class="task">
+          <div class="task-name">Bulk coverage campaigns across modules</div>
+          <div class="task-route"><span class="arrow">→</span><span class="chip c-devin">Devin</span><span class="cost">$$$ · only with verifiable suites + CI as judge</span></div>
+        </div>
+      </div>
+
+      <div class="stage">
+        <div class="stage-head"><span class="stage-num">05</span><h3>Defect Fix</h3></div>
+        <div class="stage-why">Interactive by default; Devin only when defects arrive as a specified, repetitive batch.</div>
+
+        <div class="task">
+          <div class="task-name">Individual fixes — clear or exploratory repro</div>
+          <div class="task-route"><span class="arrow">→</span><span class="chip c-copilot">Copilot · agent mode</span><span class="cost">$ · in-IDE root-cause</span></div>
+        </div>
+        <div class="task">
+          <div class="task-name">Batch remediation <span class="cost">(lint/security-scan findings · deprecation sweeps)</span></div>
+          <div class="task-route"><span class="arrow">→</span><span class="chip c-devin">Devin · parallel sessions</span><span class="cost">$$$ · machine-verifiable acceptance</span></div>
+        </div>
+      </div>
+
+      <div class="stage">
+        <div class="stage-head"><span class="stage-num">06</span><h3>PR &amp; Review</h3></div>
+        <div class="stage-why">The regulated control point. Both executors terminate in the same governed PR lane.</div>
+
+        <div class="task">
+          <div class="task-name">PR creation &amp; description</div>
+          <div class="task-route"><span class="arrow">→</span><span class="chip c-copilot">Copilot · coding agent</span><span class="plus">or</span><span class="chip c-devin">Devin session output</span><span class="cost">same lane, agent identity on diffs</span></div>
+        </div>
+        <div class="task">
+          <div class="task-name">First-pass AI review</div>
+          <div class="task-route"><span class="arrow">→</span><span class="chip c-copilot">Copilot code review</span><span class="plus">+</span><span class="chip c-devinlite">Devin Review</span><span class="cost">$–¢ · second pass on Devin-authored PRs</span></div>
+        </div>
+        <div class="task">
+          <div class="task-name">Final approval</div>
+          <div class="task-route"><span class="arrow">→</span><span class="chip c-human">HUMAN · mandatory</span><span class="cost">branch protection enforced</span></div>
+        </div>
+      </div>
+
+      <div class="stage">
+        <div class="stage-head"><span class="stage-num">07</span><h3>Documentation</h3></div>
+        <div class="stage-why">Cheapest stage of all — comprehension tooling's natural home.</div>
+
+        <div class="task">
+          <div class="task-name">Repo wiki refresh (auto-indexed)</div>
+          <div class="task-route"><span class="arrow">→</span><span class="chip c-devinlite">Devin Wiki · DeepWiki</span><span class="cost">¢ · verify against source</span></div>
+        </div>
+        <div class="task">
+          <div class="task-name">Change docs &amp; runbooks</div>
+          <div class="task-route"><span class="arrow">→</span><span class="chip c-copilot">Copilot · agent mode</span><span class="cost">$</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="splitrule">
+    <h4>The split rule — three questions decide the executor</h4>
+    <div class="rule-row"><span class="rule-q"><b>Is it fully specified with acceptance criteria?</b> No → Copilot (engineer refines in the loop). Yes → next question.</span></div>
+    <div class="rule-row"><span class="rule-q"><b>Is the output machine-verifiable — tests/CI as judge?</b> No → Copilot. Yes → next question.</span></div>
+    <div class="rule-row"><span class="rule-q"><b>Is it one of many similar subtasks worth parallelizing?</b> No → Copilot coding agent handles the single ticket. Yes → Devin campaign, ACU budget attached.</span></div>
+  </div>
+
+  <div class="telemetry">
+    <h4>Governance rail — runs under every stage</h4>
+    <p><b>Attribute spend per stage and per executor</b> · Copilot credit budgets at cost-center level, overage blocked by default · Devin per-campaign ACU caps, auto-reload off · track <b>cost per merged PR, rework rate, defect escape</b> — a Devin campaign survives only if its cost per merged, verified subtask beats the Copilot-supervised alternative.</p>
+  </div>
+
+  </div><!-- /tab-flow -->
+
+  <!-- ============================================================= -->
+  <!-- ==================== TAB 2 · ECOSYSTEM ====================== -->
+  <!-- ============================================================= -->
+  <div class="tabpanel" id="tab-eco" role="tabpanel" aria-labelledby="tabbtn-eco">
+
+  <div class="doctrine">
+    <div class="d-card devin">
+      <h2><span class="d-dot"></span>Why setup comes first</h2>
+      <div class="d-role">The flow assumes a prepared portfolio</div>
+      <p>Tab 1's stage 01 assumes <b>a wiki already exists per app</b>, the human gate assumes <b>a shared artifact convention</b>, and the Devin fork assumes <b>playbooks and ACU budgets are pre-wired</b>. None of that is free — it's a one-time (then continuously refreshed) portfolio investment.</p>
+      <div class="d-cost">Sequence: index → standardize → tier → wire campaigns → operate</div>
+    </div>
+    <div class="d-card copilot">
+      <h2><span class="d-dot"></span>The portfolio picture</h2>
+      <div class="d-role">Illustrative · a CB digital portfolio</div>
+      <p>A dozen-plus apps of mixed age and risk: customer-facing web/mobile, API platforms, internal servicing tools, batch/reporting engines, and legacy systems queued for modernization. <b>Not every app earns the same tooling depth on day one.</b></p>
+      <div class="d-cost">Tier by change-volume × risk × modernization intent — not alphabetically</div>
+    </div>
+  </div>
+
+  <div class="flow eco">
+
+    <!-- ---------- PHASE A ---------- -->
+    <div class="violet-zone">
+      <div class="zone violet">Phase A · Index the estate · Devin-led · read-only · weeks 0–4</div>
+
+      <div class="stage">
+        <div class="stage-head"><span class="stage-num">A1</span><h3>Generate wikis for every application first</h3></div>
+        <div class="stage-why">The single highest-leverage setup move: point Devin's indexing at the whole portfolio before any ticket flows. Comprehension becomes a pre-built asset, not a per-ticket cost.</div>
+
+        <div class="task">
+          <div class="task-name">Onboard all portfolio repos → auto-generate a Devin Wiki per app</div>
+          <div class="task-route"><span class="arrow">→</span><span class="chip c-devinlite">Devin Wiki · DeepWiki (private)</span><span class="cost">¢ · architecture maps · data flows · module docs</span></div>
+        </div>
+        <div class="task">
+          <div class="task-name">Cross-app dependency &amp; integration map <span class="cost">(who calls whom · shared libs · shared data)</span></div>
+          <div class="task-route"><span class="arrow">→</span><span class="chip c-devinlite">Devin Search across indexed repos</span><span class="cost">¢ · the portfolio blast-radius view</span></div>
+        </div>
+        <div class="task">
+          <div class="task-name">Wiki QA pass — each app team verifies its own wiki against source</div>
+          <div class="task-route"><span class="arrow">→</span><span class="chip c-human">APP OWNERS · mandatory</span><span class="cost">hallucination check before anyone trusts it</span></div>
+        </div>
+        <div class="task">
+          <div class="task-name">Re-index triggers on merge — wikis refresh as code changes</div>
+          <div class="task-route"><span class="arrow">→</span><span class="chip c-platform">CI hook · platform team</span><span class="cost">stale wiki = wrong impact analysis</span></div>
+        </div>
+
+        <div class="avoid"><b>Anti-pattern:</b> treating the generated wikis as ground truth. They're cheap comprehension scaffolding — every specific path/function claim is a hypothesis until an app owner verifies it.</div>
+      </div>
+
+      <div class="stage">
+        <div class="stage-head"><span class="stage-num">A2</span><h3>Tier the apps — who gets what depth</h3></div>
+        <div class="stage-why">All apps get wikis + Copilot. Only some earn Devin campaign wiring. Tier by change-volume × risk × modernization intent.</div>
+
+        <div class="appgrid">
+          <div class="app t1"><div class="a-name">Legacy core batch</div><div class="a-tier">T1 · campaign target</div></div>
+          <div class="app t1"><div class="a-name">Aging API platform</div><div class="a-tier">T1 · campaign target</div></div>
+          <div class="app t2"><div class="a-name">Customer web app</div><div class="a-tier">T2 · full flow</div></div>
+          <div class="app t2"><div class="a-name">Mobile app</div><div class="a-tier">T2 · full flow</div></div>
+          <div class="app t2"><div class="a-name">Servicing portal</div><div class="a-tier">T2 · full flow</div></div>
+          <div class="app t3"><div class="a-name">Stable reporting tool</div><div class="a-tier">T3 · wiki + copilot only</div></div>
+        </div>
+
+        <div class="task" style="margin-top:12px">
+          <div class="task-name">T1 · Modernization targets — high-volume patterned change ahead</div>
+          <div class="task-route"><span class="arrow">→</span><span class="cost">full flow + Devin campaign wiring + playbook investment + ACU pool</span></div>
+        </div>
+        <div class="task">
+          <div class="task-name">T2 · Active product apps — steady feature/defect flow</div>
+          <div class="task-route"><span class="arrow">→</span><span class="cost">full Tab-1 flow · Copilot default · Devin only by exception via the gate</span></div>
+        </div>
+        <div class="task">
+          <div class="task-name">T3 · Stable / low-change apps</div>
+          <div class="task-route"><span class="arrow">→</span><span class="cost">wiki + Copilot completions only — don't gold-plate quiet systems</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ---------- PHASE B (gate) ---------- -->
+    <div class="handoff violet">
+      <h4>◇ Phase B · Standardize the contract · runs with Phase A</h4>
+      <p><b>One artifact convention across all apps, or handoffs break at portfolio scale.</b> A shared template repo seeds every app with the same skeleton — so an engineer (or agent) moving between apps reads the same map everywhere, and the gate reviews the same document shape every time.</p>
+      <div class="files">
+        <span class="file">AGENTS.md per repo · org guardrails + app-specific rules</span>
+        <span class="file">spec/plan/tasks templates</span>
+        <span class="file">impact-analysis template</span>
+        <span class="file">MCP: DeepWiki endpoint per app</span>
+        <span class="file">playbook library (shared)</span>
+      </div>
+    </div>
+
+    <div class="gate">
+      <h4>◉ Portfolio Gate — readiness before the flow goes live</h4>
+      <p><b>An app enters the Tab-1 flow only when:</b> its wiki is owner-verified · AGENTS.md is in place · CI is trustworthy enough to act as judge (Devin work is only safe where tests can veto it) · branch protection + agent identity are on · and its tier, budgets, and access list are set. <b>No CI, no campaigns — fix the test suite first.</b></p>
+    </div>
+
+    <!-- ---------- PHASE C ---------- -->
+    <div class="blue-zone">
+      <div class="zone blue">Phase C · Wire the delivery lanes · weeks 4–10</div>
+
+      <div class="stage">
+        <div class="stage-head"><span class="stage-num">C1</span><h3>The everyday lane — Copilot for all</h3></div>
+        <div class="stage-why">Every engineer on every app gets the predictable floor; org policy travels via the repos, not via training decks.</div>
+
+        <div class="task">
+          <div class="task-name">Seats + agent mode + coding agent enabled portfolio-wide</div>
+          <div class="task-route"><span class="arrow">→</span><span class="chip c-copilot">Copilot · Business/Enterprise</span><span class="cost">$ · credit budgets per cost-center · overage blocked</span></div>
+        </div>
+        <div class="task">
+          <div class="task-name">Plan Mode wired to the artifact templates <span class="cost">(plans land as spec/plan/tasks in-repo)</span></div>
+          <div class="task-route"><span class="arrow">→</span><span class="chip c-copilot">Copilot · Plan Mode</span><span class="plus">+</span><span class="chip c-platform">template repo</span><span class="cost">the gate reviews a consistent shape</span></div>
+        </div>
+      </div>
+
+      <div class="stage">
+        <div class="stage-head"><span class="stage-num">C2</span><h3>The campaign lane — Devin, pre-wired for T1 apps</h3></div>
+        <div class="stage-why">Campaign machinery is built once per pattern, then reused: playbook → pilot batch → scale. Never ad-hoc sessions.</div>
+
+        <div class="task">
+          <div class="task-name">Central Devin workspace · gated access list <span class="cost">(~5–10% of engineers, campaign leads)</span></div>
+          <div class="task-route"><span class="arrow">→</span><span class="chip c-devin">Devin · Team/Enterprise</span><span class="cost">$$$ · shared ACU pool · auto-reload OFF</span></div>
+        </div>
+        <div class="task">
+          <div class="task-name">Playbook library per repeatable pattern <span class="cost">(dep-upgrade · framework-bump · coverage · scan-remediation)</span></div>
+          <div class="task-route"><span class="arrow">→</span><span class="chip c-devinlite">Devin Knowledge / Playbooks</span><span class="cost">¢ · fixed cost amortized across every campaign</span></div>
+        </div>
+        <div class="task">
+          <div class="task-name">Pilot batch per new campaign type <span class="cost">(~10–20 subtasks before scaling)</span></div>
+          <div class="task-route"><span class="arrow">→</span><span class="chip c-devin">Devin · capped pilot</span><span class="plus">then</span><span class="chip c-human">GO/NO-GO</span><span class="cost">scale only if cost-per-merged-subtask beats the Copilot alternative</span></div>
+        </div>
+      </div>
+
+      <div class="stage">
+        <div class="stage-head"><span class="stage-num">C3</span><h3>The shared rails — one PR lane, one ledger</h3></div>
+        <div class="stage-why">Both lanes terminate identically, and the portfolio sees one cost/outcome picture — per app, per stage, per executor.</div>
+
+        <div class="task">
+          <div class="task-name">Single governed PR lane <span class="cost">(branch protection · agent identity on diffs · human approval)</span></div>
+          <div class="task-route"><span class="arrow">→</span><span class="chip c-platform">GitHub org policy</span><span class="cost">Devin-authored PRs get Copilot review + human</span></div>
+        </div>
+        <div class="task">
+          <div class="task-name">Portfolio telemetry ledger <span class="cost">(cost per merged PR · rework · defect escape — by app × stage × executor)</span></div>
+          <div class="task-route"><span class="arrow">→</span><span class="chip c-platform">FinOps dashboard · platform team</span><span class="cost">the data that re-tiers apps quarterly</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="splitrule">
+    <h4>Operating cadence — who runs this</h4>
+    <div class="rule-row"><span class="rule-q"><b>A small platform-enablement squad owns the ecosystem</b> — wiki freshness, template repo, playbook library, MCP endpoints, budgets, dashboards. App teams consume; they don't each rebuild the rails.</span></div>
+    <div class="rule-row"><span class="rule-q"><b>Monthly:</b> cost review per app × executor · idle-seat reclaim · ACU anomaly check. <b>Quarterly:</b> re-tier apps on the telemetry (a T3 app entering modernization becomes T1; a finished T1 drops back).</span></div>
+    <div class="rule-row"><span class="rule-q"><b>Campaign kill-switch:</b> any Devin campaign whose cost per merged, verified subtask exceeds the Copilot-supervised alternative for two consecutive reviews is stopped — the playbook stays, the spend doesn't.</span></div>
+  </div>
+
+  <div class="opmodel">
+    <div class="op-card violet">
+      <h4>Sequence in one line</h4>
+      <ul>
+        <li><b>Index</b> — Devin wikis for every app, owner-verified</li>
+        <li><b>Standardize</b> — AGENTS.md + artifact templates everywhere</li>
+        <li><b>Tier</b> — T1 campaign targets · T2 full flow · T3 wiki-only</li>
+        <li><b>Wire</b> — Copilot floor + Devin campaign lane + one PR lane</li>
+        <li><b>Operate</b> — telemetry, cadence, kill-switch</li>
+      </ul>
+    </div>
+    <div class="op-card blue">
+      <h4>What this buys the portfolio</h4>
+      <ul>
+        <li><b>Stage 01 becomes near-free</b> — comprehension is pre-built, not re-bought per ticket</li>
+        <li><b>Any engineer can enter any app</b> — same wiki, same artifact shape, same gate</li>
+        <li><b>Devin spend is structurally contained</b> — campaigns only, pooled, capped, piloted</li>
+        <li><b>Cross-app blast radius is visible</b> — the portfolio dependency map catches what single-repo analysis misses</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="telemetry">
+    <h4>Honest caveats on this setup pattern</h4>
+    <p><b>“DeepWiki-the-whole-estate-first” is a sound pattern with thin independent evidence</b> — Cognition claims bank-scale indexing (400k+ repos) but publishes no accuracy figures, hence the mandatory owner-verification step. Wiki freshness lag, private-repo onboarding effort, and CI quality are the three practical blockers that stall this setup most often. Pricing signatures approximate — verify before rollout.</p>
+  </div>
+
+  </div><!-- /tab-eco -->
+
+  <!-- ============================================================= -->
+  <!-- ==================== TAB 3 · RUN THE BANK =================== -->
+  <!-- ============================================================= -->
+  <div class="tabpanel" id="tab-rtb" role="tabpanel" aria-labelledby="tabbtn-rtb">
+
+  <div class="assume">
+    <h4>Assumptions · <b>Run the Bank</b> — state them or the routing is wrong</h4>
+    <ul>
+      <li><b>Work is interrupt-driven, not roadmap-driven</b> — incidents, defects, small changes, compliance patches, vendor/platform upgrades. Arrival is unpredictable; queues, not sprints, are the honest unit.</li>
+      <li><b>Stability outranks throughput</b> — the cost of a bad change (incident, regulatory breach) dwarfs the cost of a slow one. Blast-radius control is the design goal.</li>
+      <li><b>Time-to-safe-restore governs incidents</b> — during an incident, no agent writes to production paths; AI accelerates diagnosis, humans execute the fix under change control.</li>
+      <li><b>Product's role is thin here</b> — a product owner triages and prioritizes the queue; there is no spec-writing culture for BAU items and this flow doesn't pretend otherwise.</li>
+      <li><b>Ecosystem (Tab 2) is live</b> — verified wikis, AGENTS.md, artifact templates, telemetry, and tiered app access already exist.</li>
+      <li><b>Team shape</b> — a pooled support/BAU rotation plus app-aligned engineers; Devin access sits with 1–2 campaign leads, not the whole rotation.</li>
+    </ul>
+  </div>
+
+  <div class="doctrine">
+    <div class="d-card copilot">
+      <h2><span class="d-dot"></span>How the tools shift in RTB</h2>
+      <div class="d-role">Copilot becomes near-total · Devin retreats to batches</div>
+      <p><b>~90%+ of RTB work is Copilot lane.</b> Interrupt work is under-specified by nature — it fails the split rule's first question almost every time. Devin's ACU sessions appear only when BAU debt is <b>bundled into specified, verifiable batches</b> (scan remediation, dep upgrades, EOL sweeps).</p>
+      <div class="d-cost">Usage shift: Plan Mode shrinks to lightweight triage notes · agent mode + Devin Search dominate</div>
+    </div>
+    <div class="d-card devin">
+      <h2><span class="d-dot"></span>Devin's RTB costume</h2>
+      <div class="d-role">Comprehension always · sessions only by bundle</div>
+      <p><b>Devin Search/Wiki become the on-call diagnostic aid</b> — “what changed, what calls this, where else does this pattern exist” — read-only, cents. ACU sessions are <b>never triggered by an incident</b>; they're triggered by a monthly debt-bundling review.</p>
+      <div class="d-cost">¢ diagnosis, always on · $$$ sessions, calendar-scheduled, never interrupt-scheduled</div>
+    </div>
+  </div>
+
+  <div class="flow rtb">
+
+    <div class="green-zone">
+      <div class="zone green">Lane R1 · Incident response · read-only AI · humans write</div>
+
+      <div class="stage">
+        <div class="stage-head"><span class="stage-num">R1</span><h3>Incident → diagnose fast, change slow</h3></div>
+        <div class="persona"><span class="p-chip"><b>Eng</b> on-call leads</span><span class="p-chip"><b>Product</b> comms only</span></div>
+        <div class="stage-why">AI's job is compressing time-to-understanding. Nothing autonomous touches a production path during an incident.</div>
+
+        <div class="task">
+          <div class="task-name">“What changed / what calls this / blast radius” during triage</div>
+          <div class="task-route"><span class="arrow">→</span><span class="chip c-devinlite">Devin Search · app wiki</span><span class="plus">+</span><span class="chip c-copilot">Copilot chat in-repo</span><span class="cost">¢–$ · read-only diagnosis</span></div>
+        </div>
+        <div class="task">
+          <div class="task-name">Hotfix authored under change control</div>
+          <div class="task-route"><span class="arrow">→</span><span class="chip c-copilot">Copilot · agent mode</span><span class="plus">then</span><span class="chip c-human">HUMAN · emergency CR</span><span class="cost">engineer executes · agent assists</span></div>
+        </div>
+        <div class="task">
+          <div class="task-name">Post-incident: RCA draft + wiki correction + regression test</div>
+          <div class="task-route"><span class="arrow">→</span><span class="chip c-copilot">Copilot · agent mode</span><span class="plus">+</span><span class="chip c-devinlite">wiki re-index</span><span class="cost">$ · the incident pays back as portfolio knowledge</span></div>
+        </div>
+
+        <div class="avoid"><b>Anti-pattern:</b> launching a Devin session mid-incident “to fix it autonomously.” Unpredictable agent + production pressure + audit exposure — the worst possible combination.</div>
+      </div>
+
+      <div class="zone green">Lane R2 · BAU queue · defects &amp; small changes</div>
+
+      <div class="stage">
+        <div class="stage-head"><span class="stage-num">R2</span><h3>The daily queue — lightweight version of Tab 1</h3></div>
+        <div class="persona"><span class="p-chip"><b>Product</b> triages &amp; prioritizes</span><span class="p-chip"><b>Eng</b> executes in-loop</span></div>
+        <div class="stage-why">Full seven-stage ceremony would drown a BAU queue. Stages compress: wiki-check → fix → PR. The gate shrinks to PR review itself for low-risk tiers.</div>
+
+        <div class="task">
+          <div class="task-name">Defect with clear repro</div>
+          <div class="task-route"><span class="arrow">→</span><span class="chip c-copilot">Copilot · agent mode</span><span class="cost">$ · wiki-check first if unfamiliar app</span></div>
+        </div>
+        <div class="task">
+          <div class="task-name">Well-specified small tickets <span class="cost">(copy changes · config · minor rules)</span></div>
+          <div class="task-route"><span class="arrow">→</span><span class="chip c-copilot">Copilot · coding agent</span><span class="cost">$ · assign issue → PR arrives for review</span></div>
+        </div>
+        <div class="task">
+          <div class="task-name">Exploratory / unclear-cause defects</div>
+          <div class="task-route"><span class="arrow">→</span><span class="chip c-devinlite">Devin Search diagnosis</span><span class="plus">then</span><span class="chip c-copilot">Copilot · agent mode</span><span class="cost">¢ + $ · never straight to code</span></div>
+        </div>
+
+        <div class="shift"><b>Usage shift vs Tab 1:</b> Plan Mode is optional here — a triage note in the ticket replaces spec/plan/tasks for anything under ~1 day. The artifact discipline is reserved for where it earns its cost.</div>
+      </div>
+    </div>
+
+    <div class="gate">
+      <h4>◉ RTB Gate — the monthly debt-bundling review</h4>
+      <p><b>The only door to Devin sessions in RTB.</b> Product + Engineering review the accumulated BAU debt (scan findings, deprecations, EOL libraries, flaky-test backlog) and ask the split rule of the <b>bundle</b>, not the item: specified? machine-verifiable? many similar subtasks? Three yeses → a scheduled campaign with an ACU cap. Anything else stays in the Copilot queue.</p>
+    </div>
+
+    <div class="blue-zone">
+      <div class="zone blue">Lane R3 · Scheduled maintenance campaigns · Devin's only RTB entry</div>
+
+      <div class="stage">
+        <div class="stage-head"><span class="stage-num">R3</span><h3>Bundled debt → campaign lane</h3></div>
+        <div class="persona"><span class="p-chip"><b>Eng</b> campaign lead runs</span><span class="p-chip"><b>Product</b> informed, not involved</span></div>
+        <div class="stage-why">The same three campaign types recur across every app tier — playbooks amortize. CI is the judge; humans review PRs, not sessions.</div>
+
+        <div class="task">
+          <div class="task-name">Security-scan &amp; lint remediation sweep <span class="cost">(portfolio-wide)</span></div>
+          <div class="task-route"><span class="arrow">→</span><span class="chip c-devin">Devin · parallel sessions</span><span class="cost">$$$ capped · playbook-driven</span></div>
+        </div>
+        <div class="task">
+          <div class="task-name">Dependency / EOL upgrades across apps</div>
+          <div class="task-route"><span class="arrow">→</span><span class="chip c-devin">Devin · parallel sessions</span><span class="cost">$$$ capped · CI as judge</span></div>
+        </div>
+        <div class="task">
+          <div class="task-name">Every campaign PR</div>
+          <div class="task-route"><span class="arrow">→</span><span class="chip c-copilot">Copilot code review</span><span class="plus">+</span><span class="chip c-human">HUMAN approval</span><span class="cost">same governed lane as all RTB work</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="splitrule">
+    <h4>RTB working agreement — Product × Engineering</h4>
+    <div class="rule-row"><span class="rule-q"><b>Product owns the queue, not the tools</b> — triage, priority, and customer comms. Tool routing is an engineering decision made by the split rule, invisible to the backlog.</span></div>
+    <div class="rule-row"><span class="rule-q"><b>Engineering protects the incident boundary</b> — read-only AI during incidents, no exceptions; the emergency CR process is unchanged by any of this tooling.</span></div>
+    <div class="rule-row"><span class="rule-q"><b>The debt-bundle review is the shared ritual</b> — monthly, 30 minutes, one output: which bundles graduate to the campaign lane this cycle, at what ACU cap.</span></div>
+  </div>
+
+  <div class="telemetry">
+    <h4>RTB telemetry — what “good” looks like</h4>
+    <p><b>MTTR trend</b> (does wiki-assisted diagnosis actually shrink it?) · <b>defect escape &amp; reopen rate</b> on Copilot-agent PRs · <b>campaign cost per merged remediation</b> vs. the queue alternative · <b>zero</b> unplanned Devin sessions — any interrupt-triggered ACU spend is a governance miss, not a productivity win.</p>
+  </div>
+
+  </div><!-- /tab-rtb -->
+
+  <!-- ============================================================= -->
+  <!-- ==================== TAB 4 · CHANGE THE BANK ================ -->
+  <!-- ============================================================= -->
+  <div class="tabpanel" id="tab-ctb" role="tabpanel" aria-labelledby="tabbtn-ctb">
+
+  <div class="assume">
+    <h4>Assumptions · <b>Change the Bank</b> — state them or the routing is wrong</h4>
+    <ul>
+      <li><b>Work is roadmap-driven and spec-able</b> — features, journeys, integrations, modernization epics. Product can invest in specification before code, so the artifact discipline pays for itself.</li>
+      <li><b>Throughput-with-quality is the goal</b> — cycle time matters, but rework and defect escape are the true cost drivers (METR's caution: AI can feel faster while being slower — measure it).</li>
+      <li><b>Two CTB species exist</b> — <b>new build</b> (features on T2 product apps) and <b>modernization</b> (T1 legacy campaigns). They use the tools almost oppositely, so this tab splits them.</li>
+      <li><b>Product participates in artifacts</b> — POs co-author specs and review plans at the gate; acceptance criteria are written to be machine-checkable wherever possible, because that's what unlocks the cheap lanes.</li>
+      <li><b>Ecosystem (Tab 2) is live</b> — and T1 apps flagged for modernization have owner-verified wikis + playbook investment already made.</li>
+      <li><b>Funding follows mode</b> — CTB carries the project budget; Devin ACU pools are a line item per modernization epic, not a shared utility.</li>
+    </ul>
+  </div>
+
+  <div class="doctrine">
+    <div class="d-card copilot">
+      <h2><span class="d-dot"></span>How the tools shift in CTB</h2>
+      <div class="d-role">Plan Mode graduates from optional to mandatory</div>
+      <p><b>The spec is now the product team's interface to the tooling.</b> Every epic runs the full Tab-1 artifact chain — and the quality of acceptance criteria directly determines how much work qualifies for the cheap async lanes (coding agent) and the campaign lane (Devin).</p>
+      <div class="d-cost">Usage shift: Copilot Plan Mode + coding agent become the workhorses · completions are background</div>
+    </div>
+    <div class="d-card devin">
+      <h2><span class="d-dot"></span>Devin's CTB costume</h2>
+      <div class="d-role">From maintenance batches to modernization engine</div>
+      <p><b>This is where Devin earns its premium</b> — the Nubank pattern: a legacy estate decomposed into thousands of similar, verifiable subtasks, a playbook refined on a pilot, then parallel sessions at scale. New-build feature work, by contrast, almost never qualifies.</p>
+      <div class="d-cost">¢ comprehension of the legacy estate · $$$ sessions as the migration workforce, epic-budgeted</div>
+    </div>
+  </div>
+
+  <div class="flow ctb">
+
+    <div class="amber-zone">
+      <div class="zone amber">Lane C1 · New build · features on product apps · Copilot-dominant</div>
+
+      <div class="stage">
+        <div class="stage-head"><span class="stage-num">C1</span><h3>Feature epics — the full Tab-1 flow, run properly</h3></div>
+        <div class="persona"><span class="p-chip"><b>Product</b> co-authors spec</span><span class="p-chip"><b>Eng</b> plans &amp; builds</span><span class="p-chip"><b>Design/Risk</b> at the gate</span></div>
+        <div class="stage-why">New features are creative, iterative, and under-specified until late — exactly what the split rule routes away from autonomy. Copilot end-to-end, with Devin only as a reader.</div>
+
+        <div class="task">
+          <div class="task-name">Discovery: “what exists today / what would this touch” <span class="cost">(PO + eng, pre-spec)</span></div>
+          <div class="task-route"><span class="arrow">→</span><span class="chip c-devinlite">Devin Search · app wikis</span><span class="cost">¢ · POs can query wikis directly — comprehension isn't engineer-gated</span></div>
+        </div>
+        <div class="task">
+          <div class="task-name">Spec + plan + machine-checkable acceptance criteria</div>
+          <div class="task-route"><span class="arrow">→</span><span class="chip c-copilot">Copilot · Plan Mode</span><span class="plus">+</span><span class="chip c-human">PO co-authors</span><span class="cost">$ · the artifact chain is mandatory in CTB</span></div>
+        </div>
+        <div class="task">
+          <div class="task-name">Core feature build — novel logic, UX, integration seams</div>
+          <div class="task-route"><span class="arrow">→</span><span class="chip c-copilot">Copilot · agent mode</span><span class="cost">$ · engineer in the loop throughout</span></div>
+        </div>
+        <div class="task">
+          <div class="task-name">Well-specified satellite tickets <span class="cost">(CRUD screens · API stubs · test scaffolds · i18n)</span></div>
+          <div class="task-route"><span class="arrow">→</span><span class="chip c-copilot">Copilot · coding agent</span><span class="cost">$ · parallel async PRs while engineers hold the core</span></div>
+        </div>
+
+        <div class="shift amber"><b>Usage shift vs Tab 1:</b> the fork at Implementation rarely reaches Devin here — feature work fails the “many similar subtasks” test. The optimization is instead <b>how much satellite work the spec quality pushes into the async coding-agent lane.</b></div>
+      </div>
+    </div>
+
+    <div class="gate">
+      <h4>◉ CTB Gate — plan approval is also the make-or-buy-autonomy decision</h4>
+      <p><b>Product + Engineering approve the artifact and classify every workstream:</b> creative/iterative → Copilot agent mode · specified single tickets → Copilot coding agent · specified × verifiable × high-volume → Devin campaign with an epic-budgeted ACU cap and a pilot batch. For modernization epics this gate also sets the <b>go/no-go threshold</b>: scale only if the pilot's cost per merged, verified subtask beats the human-plus-Copilot alternative.</p>
+    </div>
+
+    <div class="violet-zone">
+      <div class="zone violet">Lane C2 · Modernization · legacy campaigns · Devin's home ground</div>
+
+      <div class="stage">
+        <div class="stage-head"><span class="stage-num">C2</span><h3>Modernization epics — the Nubank pattern, governed</h3></div>
+        <div class="persona"><span class="p-chip"><b>Eng</b> campaign lead owns</span><span class="p-chip"><b>Product</b> sets sequence &amp; cutover</span><span class="p-chip"><b>Architecture</b> owns target state</span></div>
+        <div class="stage-why">The one CTB species where autonomy at volume beats supervision: decompose → playbook → pilot → parallelize → verify. Humans design the pattern once; Devin repeats it thousands of times.</div>
+
+        <div class="task">
+          <div class="task-name">Estate comprehension — legacy maps, dead-code candidates, migration inventory</div>
+          <div class="task-route"><span class="arrow">→</span><span class="chip c-devinlite">Devin Wiki · DeepWiki · Search</span><span class="cost">¢ · pre-built in Tab 2, refreshed here</span></div>
+        </div>
+        <div class="task">
+          <div class="task-name">Decomposition into uniform, verifiable subtasks <span class="cost">(the make-or-break step)</span></div>
+          <div class="task-route"><span class="arrow">→</span><span class="chip c-copilot">Copilot · Plan Mode</span><span class="plus">+</span><span class="chip c-human">architect</span><span class="cost">$ · subtask uniformity is what makes ACUs cheap</span></div>
+        </div>
+        <div class="task">
+          <div class="task-name">Playbook build + pilot batch <span class="cost">(~10–20 subtasks · refine until unassisted pass-rate is credible)</span></div>
+          <div class="task-route"><span class="arrow">→</span><span class="chip c-devinlite">Devin Knowledge / Playbooks</span><span class="plus">+</span><span class="chip c-devin">capped pilot</span><span class="cost">¢ + $$$ small · Nubank doubled completion via this step</span></div>
+        </div>
+        <div class="task">
+          <div class="task-name">Scaled parallel execution across the estate</div>
+          <div class="task-route"><span class="arrow">→</span><span class="chip c-devin">Devin · parallel sessions</span><span class="cost">$$$ epic-budgeted · CI + characterization tests as judge</span></div>
+        </div>
+        <div class="task">
+          <div class="task-name">Every migration PR — batch review + spot-check deep dives</div>
+          <div class="task-route"><span class="arrow">→</span><span class="chip c-copilot">Copilot code review</span><span class="plus">+</span><span class="chip c-devinlite">Devin Review</span><span class="plus">+</span><span class="chip c-human">HUMAN sampling</span><span class="cost">review capacity is the real bottleneck — staff it</span></div>
+        </div>
+
+        <div class="avoid"><b>Anti-pattern:</b> pointing Devin at a modernization epic <b>without</b> the decomposition + playbook + pilot sequence — that's how ACU burn happens on unpredictable output. The Answer.AI failure mode lives exactly here.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="splitrule">
+    <h4>CTB working agreement — Product × Engineering</h4>
+    <div class="rule-row"><span class="rule-q"><b>Product writes acceptance criteria as if a machine will check them</b> — because one will. Vague criteria silently tax the epic by forcing everything into the supervised lane.</span></div>
+    <div class="rule-row"><span class="rule-q"><b>Engineering owns lane classification at the gate</b> — and re-classifies as specs firm up mid-epic; satellite work migrates to the async lane as criteria sharpen.</span></div>
+    <div class="rule-row"><span class="rule-q"><b>Modernization epics budget review capacity explicitly</b> — parallel Devin sessions can out-produce human review; throttle sessions to review throughput, never the reverse.</span></div>
+  </div>
+
+  <div class="telemetry">
+    <h4>CTB telemetry — what “good” looks like</h4>
+    <p><b>Cost per merged PR by lane</b> (supervised vs. async vs. campaign) · <b>rework/churn rate per lane</b> — the honest counterweight to velocity feel (METR) · <b>% of epic scope flowing through async + campaign lanes</b> as a spec-quality proxy · <b>pilot pass-rate before scale</b> on every campaign · <b>review-queue depth</b> as the throttle signal.</p>
+  </div>
+
+  </div><!-- /tab-ctb -->
+
+  <p class="footnote">Two-tool restriction per request: GitHub Copilot (Agent mode · Plan Mode · coding agent · code review · completions) and Devin (Search · Wiki · DeepWiki · Playbooks · Review · ACU sessions). The Playbook tab names one primary tool per SDLC step; exceptions and guardrails live in The Routed Ticket tab. Tab app names are illustrative placeholders. RTB/CTB tabs state their assumptions explicitly — change the assumptions and the routing changes; the ~90% RTB Copilot share and lane splits are design targets, not measured benchmarks. Tool-fit judgments per the Jul 2026 extension report — independent evidence (Answer.AI 3/20; METR RCT) and vendor-sourced claims (Nubank 8–12x; 400k-repo indexing) flagged accordingly. Verify pricing before rollout.</p>
+
+</div>
+
+<script>
+function showTab(name){
+  var panels=document.querySelectorAll('.tabpanel');
+  var tabs=document.querySelectorAll('.tab');
+  panels.forEach(function(p){p.classList.remove('active')});
+  tabs.forEach(function(t){t.classList.remove('active');t.setAttribute('aria-selected','false')});
+  document.getElementById('tab-'+name).classList.add('active');
+  var btn=document.getElementById('tabbtn-'+name);
+  btn.classList.add('active');btn.setAttribute('aria-selected','true');
+}
+</script>
+</body>
+</html>
