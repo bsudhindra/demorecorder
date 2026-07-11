@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rule Engine · ML · GenAI — Self-Check v2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0B0F14;
+    --panel:#121821;
+    --panel-2:#1A2330;
+    --line:#26323F;
+    --line-soft:#1D2733;
+    --text:#E6EDF3;
+    --muted:#7C8B9B;
+    --amber:#E8A33D;
+    --cyan:#4FC3D9;
+    --violet:#9B8CF2;
+    --coral:#E0673D;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;background:var(--ink);color:var(--text);}
+  body{
+    font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
+    -webkit-font-smoothing:antialiased;
+    line-height:1.5;
+  }
+  .bg-grid{
+    position:fixed; inset:0; pointer-events:none; z-index:0;
+    background-image:
+      linear-gradient(var(--line-soft) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line-soft) 1px, transparent 1px);
+    background-size:40px 40px;
+    opacity:0.35;
+    mask-image:radial-gradient(ellipse 80% 60% at 50% 0%, black 0%, transparent 70%);
+    -webkit-mask-image:radial-gradient(ellipse 80% 60% at 50% 0%, black 0%, transparent 70%);
+  }
+  .wrap{position:relative; z-index:1; max-width:880px; margin:0 auto; padding:52px 24px 72px;}
+
+  /* header */
+  .eyebrow{
+    font-family:'IBM Plex Mono',monospace; font-size:11.5px; font-weight:600;
+    letter-spacing:0.14em; text-transform:uppercase; color:var(--amber);
+    display:flex; align-items:center; gap:10px; margin-bottom:18px;
+  }
+  .eyebrow::before{content:'';width:20px;height:1px;background:var(--amber);}
+  h1{
+    font-family:'IBM Plex Sans',sans-serif; font-weight:700;
+    font-size:clamp(26px,4.2vw,38px); line-height:1.12; letter-spacing:-0.01em;
+    margin:0 0 14px; color:#fff;
+  }
+  .subhead{color:var(--muted); font-size:15.5px; max-width:560px;}
+
+  /* tabs */
+  .tabs{
+    display:flex; gap:6px; margin:36px 0 0; border-bottom:1px solid var(--line);
+    overflow-x:auto;
+  }
+  .tab-btn{
+    font-family:'IBM Plex Mono',monospace; font-size:12px; font-weight:600;
+    letter-spacing:0.05em; text-transform:uppercase; color:var(--muted);
+    background:none; border:none; padding:12px 4px 14px; margin-right:22px;
+    cursor:pointer; position:relative; white-space:nowrap;
+  }
+  .tab-btn::after{
+    content:''; position:absolute; left:0; right:0; bottom:-1px; height:2px;
+    background:var(--amber); transform:scaleX(0); transition:transform 0.2s ease;
+  }
+  .tab-btn:hover{color:var(--text);}
+  .tab-btn.active{color:#fff;}
+  .tab-btn.active::after{transform:scaleX(1);}
+  .tab-panel{display:none; animation:fadeIn 0.3s ease;}
+  .tab-panel.active{display:block;}
+  .tab-intro{color:var(--muted); font-size:14.5px; margin:22px 0 8px; max-width:620px; line-height:1.6;}
+
+  /* section label */
+  .section-label{
+    font-family:'IBM Plex Mono',monospace; font-size:11px; font-weight:600;
+    letter-spacing:0.1em; text-transform:uppercase; color:var(--muted);
+    margin:36px 0 16px; display:flex; align-items:center; gap:10px;
+  }
+  .section-label::after{content:'';flex:1;height:1px;background:var(--line);}
+  .tab-panel > .section-label:first-of-type{margin-top:26px;}
+
+  /* hybrid banner */
+  .hybrid-banner{
+    display:flex; gap:12px; align-items:flex-start; background:var(--panel-2);
+    border:1px dashed var(--line); border-radius:7px; padding:14px 16px; margin:22px 0 0;
+    font-size:13.5px; color:var(--muted); line-height:1.55;
+  }
+  .hybrid-banner b{color:var(--text); font-weight:600;}
+  .hybrid-badge{font-family:'IBM Plex Mono'; font-size:10px; font-weight:600; color:var(--amber); background:rgba(232,163,61,0.12); border:1px solid rgba(232,163,61,0.35); padding:3px 8px; border-radius:4px; flex-shrink:0; letter-spacing:0.04em; margin-top:1px;}
+
+  /* gates / rail */
+  .gates{position:relative; padding-left:26px; display:flex; flex-direction:column; gap:16px;}
+  .gates::before{content:''; position:absolute; left:5px; top:6px; bottom:6px; width:2px; background:var(--line);}
+  .gate{
+    position:relative; background:var(--panel); border:1px solid var(--line);
+    border-radius:7px; padding:19px 20px 18px; transition:border-color 0.25s ease;
+  }
+  .gate:hover{border-color:#3A4A5C;}
+  .gate:hover::before{border-color:#F2B75C;}
+  .gate::before{
+    content:''; position:absolute; left:-25px; top:24px; width:10px; height:10px;
+    border-radius:50%; background:var(--ink); border:2px solid var(--amber); z-index:2;
+  }
+  .gate::after{content:''; position:absolute; left:-20px; top:28px; width:20px; height:1px; background:var(--line);}
+  .gate-head{display:flex; gap:12px; align-items:baseline; margin-bottom:2px;}
+  .gate-num{font-family:'IBM Plex Mono',monospace; font-size:12px; font-weight:600; color:var(--amber); letter-spacing:0.04em; flex-shrink:0;}
+  .gate-q{font-size:15.5px; font-weight:500; color:var(--text); line-height:1.48;}
+
+  .branches{display:flex; justify-content:space-between; align-items:flex-start; gap:14px; flex-wrap:wrap; margin-top:14px; padding-top:14px; border-top:1px dashed var(--line);}
+  .branch-no{font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--muted); display:flex; align-items:center; gap:6px; padding-top:4px;}
+  .branch-yes{display:flex; flex-direction:column; align-items:flex-end; gap:8px;}
+  .chip{font-family:'IBM Plex Mono',monospace; font-size:11.5px; font-weight:600; letter-spacing:0.03em; padding:6px 13px; border-radius:5px; text-transform:uppercase; white-space:nowrap; transition:filter 0.2s ease;}
+  .gate:hover .chip{filter:brightness(1.2);}
+  .chip.rule{background:rgba(79,195,217,0.12); color:var(--cyan); border:1px solid rgba(79,195,217,0.4);}
+  .chip.ml{background:rgba(155,140,242,0.12); color:var(--violet); border:1px solid rgba(155,140,242,0.4);}
+  .chip.gen{background:rgba(224,103,61,0.13); color:var(--coral); border:1px solid rgba(224,103,61,0.42);}
+  .tags{display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end;}
+  .tag{font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#93A3B4; background:var(--panel-2); padding:3px 8px; border-radius:4px; border:1px solid var(--line); white-space:nowrap;}
+
+  .note-toggle{font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--muted); cursor:pointer; margin-top:12px; display:inline-flex; align-items:center; gap:6px; user-select:none;}
+  .note-toggle:hover{color:var(--text);}
+  .note-toggle .chev{transition:transform 0.2s ease; font-size:9px;}
+  .note-toggle.open .chev{transform:rotate(90deg);}
+  .note-body{display:none; font-size:13.5px; color:var(--muted); margin-top:9px; padding:11px 13px; background:var(--panel-2); border-left:2px solid var(--amber); border-radius:4px; line-height:1.55;}
+  .note-body.open{display:block;}
+
+  /* overlay rules */
+  .overlay-bar{background:linear-gradient(90deg, rgba(232,163,61,0.09), rgba(232,163,61,0.01)); border:1px solid rgba(232,163,61,0.32); border-left:3px solid var(--amber); border-radius:6px; padding:16px 20px; margin-top:14px;}
+  .overlay-bar:first-child{margin-top:0;}
+  .overlay-label{font-family:'IBM Plex Mono',monospace; font-size:10.5px; font-weight:600; color:var(--amber); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:7px;}
+  .overlay-text{font-size:14px; color:var(--text); line-height:1.55;}
+  .overlay-text b{color:#fff; font-weight:600;}
+
+  /* generic 3-col / 2-col card grids (frequency, tco, drift) */
+  .card-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:14px;}
+  .card-grid.cols-2{grid-template-columns:repeat(2,1fr);}
+  .info-card{background:var(--panel); border:1px solid var(--line); border-radius:7px; padding:18px 18px 17px;}
+  .info-card h4{font-family:'IBM Plex Sans',sans-serif; font-size:14px; margin:0 0 9px; color:#fff; display:flex; align-items:center; gap:8px;}
+  .info-card h4 .dot{width:8px; height:8px; border-radius:50%; flex-shrink:0;}
+  .info-card h4 .dot.rule{background:var(--cyan);}
+  .info-card h4 .dot.ml{background:var(--violet);}
+  .info-card h4 .dot.gen{background:var(--coral);}
+  .info-card h4 .dot.neutral{background:var(--muted);}
+  .info-card p{font-size:13.5px; color:var(--muted); line-height:1.6; margin:0;}
+  .info-card .eyebrow-mini{font-family:'IBM Plex Mono'; font-size:10px; color:var(--amber); letter-spacing:0.06em; margin-bottom:6px; display:block;}
+
+  /* cost bars */
+  .cost-bars{display:flex; flex-direction:column; gap:9px; margin:12px 0 14px;}
+  .cost-bar-row{display:flex; align-items:center; gap:10px;}
+  .cost-bar-label{font-family:'IBM Plex Mono'; font-size:9.5px; color:var(--muted); width:56px; flex-shrink:0; text-transform:uppercase; letter-spacing:0.03em;}
+  .cost-bar-track{flex:1; height:6px; background:var(--panel-2); border-radius:3px; overflow:hidden; position:relative;}
+  .cost-bar-fill{height:100%; border-radius:3px;}
+  .cost-bar-fill.rule{background:var(--cyan);}
+  .cost-bar-fill.ml{background:var(--violet);}
+  .cost-bar-fill.gen{background:var(--coral);}
+  .cost-bar-fill.stripe{background:repeating-linear-gradient(135deg, var(--coral) 0 5px, rgba(224,103,61,0.25) 5px 10px); width:100% !important;}
+  .cost-bar-note{font-family:'IBM Plex Mono'; font-size:9.5px; color:var(--muted); flex-shrink:0;}
+
+  /* price table */
+  .price-table-wrap{overflow-x:auto; margin-top:20px; border:1px solid var(--line); border-radius:7px;}
+  .price-table{width:100%; border-collapse:collapse; font-size:12.5px; min-width:480px;}
+  .price-table th{text-align:left; color:var(--muted); font-family:'IBM Plex Mono'; font-weight:600; text-transform:uppercase; font-size:10px; letter-spacing:0.05em; padding:11px 14px; border-bottom:1px solid var(--line); background:var(--panel-2);}
+  .price-table td{padding:11px 14px; border-bottom:1px solid var(--line-soft); color:var(--text); font-family:'IBM Plex Mono'; font-size:12px;}
+  .price-table tr:last-child td{border-bottom:none;}
+  .price-table td.provider{color:#fff; font-weight:600; font-family:'IBM Plex Sans'; font-size:13px;}
+  .price-caveat{font-size:12px; color:var(--muted); margin-top:10px; line-height:1.55;}
+
+  .crossover-note{margin-top:16px; background:var(--panel-2); border-left:3px solid var(--muted); border-radius:6px; padding:14px 16px; font-size:13.5px; color:var(--text); line-height:1.55;}
+  .crossover-note b{color:#fff;}
+  .rules-note{display:flex; align-items:flex-start; gap:8px; margin-top:12px;}
+  .rules-note .dot{width:7px; height:7px; border-radius:50%; background:var(--muted); flex-shrink:0; margin-top:6px;}
+
+  /* governance cards */
+  .gov-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:14px;}
+  .gov-card{background:var(--panel); border:1px solid var(--line); border-radius:7px; padding:19px 20px 18px;}
+  .gov-label{font-family:'IBM Plex Mono'; font-size:10.5px; font-weight:600; color:var(--amber); letter-spacing:0.07em; text-transform:uppercase; margin-bottom:11px;}
+  .gov-row{display:flex; gap:9px; margin-bottom:10px; align-items:baseline;}
+  .gov-row:last-of-type{margin-bottom:0;}
+  .tag-if,.tag-then{font-family:'IBM Plex Mono'; font-size:10px; font-weight:600; padding:2px 7px; border-radius:4px; flex-shrink:0; letter-spacing:0.03em;}
+  .tag-if{color:var(--amber); background:rgba(232,163,61,0.12); border:1px solid rgba(232,163,61,0.35);}
+  .tag-then{color:#93A3B4; background:var(--panel-2); border:1px solid var(--line);}
+  .gov-row .gov-text{font-size:13.5px; line-height:1.55; color:var(--text);}
+  .gov-row:last-of-type .gov-text{color:var(--muted);}
+
+  /* precedent */
+  .precedent{background:var(--panel); border:1px solid var(--line); border-radius:7px; padding:20px 22px; margin-top:44px;}
+  .precedent-tag{font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(--cyan); background:rgba(79,195,217,0.1); border:1px solid rgba(79,195,217,0.35); padding:4px 10px; border-radius:4px; text-transform:uppercase; letter-spacing:0.06em; display:inline-block; margin-bottom:13px;}
+  .precedent h3{font-family:'IBM Plex Sans',sans-serif; font-size:16.5px; margin:0 0 8px; color:#fff;}
+  .precedent p{font-size:14px; color:var(--muted); line-height:1.62; margin:0 0 14px;}
+  .precedent-fits{display:flex; gap:8px; flex-wrap:wrap;}
+  .precedent-fits span{font-family:'IBM Plex Mono'; font-size:10px; color:#93A3B4; background:var(--panel-2); border:1px solid var(--line); padding:4px 9px; border-radius:4px;}
+
+  /* checklist */
+  .check-item{display:flex; gap:14px; padding:15px 0; border-bottom:1px solid var(--line);}
+  .check-item:last-child{border-bottom:none;}
+  .check-num{font-family:'IBM Plex Mono',monospace; color:var(--amber); font-size:12.5px; font-weight:600; flex-shrink:0; width:24px; padding-top:1px;}
+  .check-q{font-size:14.5px; color:var(--text); font-weight:500;}
+  .check-sub{font-size:13px; color:var(--muted); margin-top:3px; line-height:1.5;}
+
+  .footer-note{margin-top:40px; padding-top:20px; border-top:1px solid var(--line); font-size:12.5px; color:var(--muted); line-height:1.65; max-width:680px;}
+
+  @keyframes fadeIn{from{opacity:0;} to{opacity:1;}}
+
+  @media (max-width:700px){
+    .card-grid{grid-template-columns:1fr;}
+    .card-grid.cols-2{grid-template-columns:1fr;}
+    .gov-grid{grid-template-columns:1fr;}
+  }
+  @media (max-width:600px){
+    .wrap{padding:36px 16px 56px;}
+    .branches{flex-direction:column;}
+    .branch-yes{align-items:flex-start; width:100%;}
+    .tags{justify-content:flex-start;}
+    .gate{padding:16px 16px 15px;}
+    .tabs{gap:0;}
+    .tab-btn{margin-right:16px; font-size:11px;}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none !important; transition:none !important;}
+  }
+</style>
+</head>
+<body>
+<div class="bg-grid"></div>
+<div class="wrap">
+
+  <header>
+    <div class="eyebrow">Team self-check · before you scope the build</div>
+    <h1>Rule engine.<br>ML model. Or GenAI.</h1>
+    <p class="subhead">Three routing gates, then a true-cost layer, then the governance checks a regulated bank can't skip.</p>
+  </header>
+
+  <nav class="tabs">
+    <button class="tab-btn active" data-tab="gates">Routing gates</button>
+    <button class="tab-btn" data-tab="cost">True cost</button>
+    <button class="tab-btn" data-tab="gov">Governance</button>
+  </nav>
+
+  <!-- ============ TAB 1 : ROUTING GATES ============ -->
+  <div class="tab-panel active" id="tab-gates">
+
+    <div class="hybrid-banner">
+      <span class="hybrid-badge">HYBRID</span>
+      <span>Most production systems end up <b>hybrid</b> — rules for the deterministic core, ML for scoring, GenAI for language — like the precedent below. These gates pick the primary class for a given piece of work, not one winner for the whole system.</span>
+    </div>
+
+    <div class="section-label">The routing gates</div>
+    <div class="gates">
+
+      <div class="gate">
+        <div class="gate-head">
+          <span class="gate-num">G1</span>
+          <span class="gate-q">Can a domain expert write the complete decision logic as explicit rules — and does that logic stay stable, not shifting quarter to quarter, without exploding into hundreds of interacting conditions?</span>
+        </div>
+        <div class="branches">
+          <div class="branch-no">↓ NO — continue to G2</div>
+          <div class="branch-yes">
+            <div class="chip rule">Rule engine</div>
+            <div class="tags"><span class="tag">deterministic</span><span class="tag">auditable</span><span class="tag">cheap &amp; fast</span></div>
+          </div>
+        </div>
+        <div class="note-toggle" data-target="n1"><span class="chev">▸</span> why this still needs a caveat</div>
+        <div class="note-body" id="n1">Writable isn't the same as stable. Rules that are technically writable but volatile, or that explode into unmanageable interactions, are a G2 signal, not a G1 pass — determinism only pays off when the logic actually holds still.</div>
+      </div>
+
+      <div class="gate">
+        <div class="gate-head">
+          <span class="gate-num">G2</span>
+          <span class="gate-q">Is it a bounded decision — classify, score, rank, or detect — that can only be learned from historical examples, not written as logic?</span>
+        </div>
+        <div class="branches">
+          <div class="branch-no">↓ NO — continue to G3</div>
+          <div class="branch-yes">
+            <div class="chip ml">ML model</div>
+            <div class="tags"><span class="tag">pattern-learned</span><span class="tag">needs labeled data</span><span class="tag">needs monitoring</span></div>
+          </div>
+        </div>
+        <div class="note-toggle" data-target="n2"><span class="chev">▸</span> why this still needs a caveat</div>
+        <div class="note-body" id="n2">This comes with a retraining loop and an explainability story for model-risk review — training accuracy alone won't clear that bar. Budget for drift monitoring and periodic champion/challenger evaluation from day one, not as an afterthought (see the True Cost tab).</div>
+      </div>
+
+      <div class="gate">
+        <div class="gate-head">
+          <span class="gate-num">G3</span>
+          <span class="gate-q">Does it need language understanding or generation, synthesis across unstructured content, or reasoning over novel input that won't fit a fixed schema?</span>
+        </div>
+        <div class="branches">
+          <div class="branch-no">↓ NO — re-scope, or decompose into a hybrid</div>
+          <div class="branch-yes">
+            <div class="chip gen">GenAI</div>
+            <div class="tags"><span class="tag">language / reasoning</span><span class="tag">orthogonal</span><span class="tag">no arithmetic</span></div>
+          </div>
+        </div>
+        <div class="note-toggle" data-target="n3"><span class="chev">▸</span> why this still needs a caveat</div>
+        <div class="note-body" id="n3">Two different "no"s: the problem might not be defined yet (re-scope), or it might genuinely need more than one class working together — e.g. retrieval and ranking before any generation (decompose, then send each piece back through these gates). And inside a "yes": GenAI narrates and synthesizes well; it's much less reliable at multi-step autonomous reasoning or tool orchestration — keep deterministic control flow in charge of the sequence.</div>
+      </div>
+
+    </div>
+
+    <div class="section-label">Applies regardless of where you land</div>
+
+    <div class="overlay-bar">
+      <div class="overlay-label">The 10x heuristic — not a measured constant</div>
+      <div class="overlay-text">Every path still has to clear this, but calibrate the baseline first. For a permanent production system, the bar is <b>10x over the alternative you didn't pick</b>. For a one-time task, the honest baseline is a person doing it once by hand — which changes the math completely (see the True Cost tab). Treat 10x as a forcing function to keep you honest, not an empirically derived threshold.</div>
+    </div>
+
+    <div class="overlay-bar">
+      <div class="overlay-label">The orthogonality rule — applies specifically when the answer is GenAI</div>
+      <div class="overlay-text">The model <b>narrates, translates, and orchestrates intent</b> — it is not a deterministic executor. It never touches raw data, never does arithmetic, and is never the system of record; even at temperature 0, outputs aren't guaranteed bit-for-bit reproducible. Validated APIs and rules own the computation and sit orthogonal to it. Enforce it at the boundary: require schema-validated structured output, and give the model least-privilege access to any tool it can call.</div>
+    </div>
+
+  </div>
+
+  <!-- ============ TAB 2 : TRUE COST ============ -->
+  <div class="tab-panel" id="tab-cost">
+    <p class="tab-intro">The gates pick a class. This layer stress-tests that choice against how often it runs, what it really costs, and how it decays — and it can override the gate's answer.</p>
+
+    <div class="section-label">Usage frequency / duration</div>
+    <div class="card-grid">
+      <div class="info-card">
+        <h4><span class="dot neutral"></span>One-time / rare</h4>
+        <p>Relax the 10x bar. Build cost can never amortize over a single run — default to whatever costs least in engineering time, usually GenAI (or a person). Price-per-call stops mattering when there's only one call.</p>
+      </div>
+      <div class="info-card">
+        <h4><span class="dot neutral"></span>Periodic (monthly / quarterly)</h4>
+        <p>The ambiguous middle. Favor whatever costs least to keep alive <i>between</i> runs — an idle rule engine is nearly free; an idle ML model still owes you monitoring and may be stale by the next run; a GenAI call needs re-checking against drift first. Batch pricing (~half of real-time) fits this rhythm well.</p>
+      </div>
+      <div class="info-card">
+        <h4><span class="dot neutral"></span>Continuous / high-volume</h4>
+        <p>Per-call GenAI cost scales linearly with volume; rule/ML marginal cost approaches zero once built. At sustained frequency, a job an LLM could technically do may cost more per month than a deterministic build doing the same job. "Feasible" stops being reason enough.</p>
+      </div>
+    </div>
+
+    <div class="section-label">Operating costs (TCO)</div>
+    <div class="card-grid">
+      <div class="info-card">
+        <h4><span class="dot rule"></span>Rule engine</h4>
+        <div class="cost-bars">
+          <div class="cost-bar-row"><span class="cost-bar-label">Build</span><div class="cost-bar-track"><div class="cost-bar-fill rule" style="width:70%"></div></div></div>
+          <div class="cost-bar-row"><span class="cost-bar-label">Run</span><div class="cost-bar-track"><div class="cost-bar-fill rule" style="width:15%"></div></div></div>
+          <div class="cost-bar-row"><span class="cost-bar-label">Maintain</span><div class="cost-bar-track"><div class="cost-bar-fill rule" style="width:30%"></div></div><span class="cost-bar-note">∝ churn</span></div>
+        </div>
+        <p>No labeling, no GPUs, no retraining, no per-call fees. Cheapest and most auditable of the three when G1 genuinely holds.</p>
+      </div>
+      <div class="info-card">
+        <h4><span class="dot ml"></span>ML model</h4>
+        <div class="cost-bars">
+          <div class="cost-bar-row"><span class="cost-bar-label">Build</span><div class="cost-bar-track"><div class="cost-bar-fill ml" style="width:45%"></div></div></div>
+          <div class="cost-bar-row"><span class="cost-bar-label">Run</span><div class="cost-bar-track"><div class="cost-bar-fill ml" style="width:55%"></div></div></div>
+          <div class="cost-bar-row"><span class="cost-bar-label">Maintain</span><div class="cost-bar-track"><div class="cost-bar-fill ml" style="width:85%"></div></div><span class="cost-bar-note">MLOps</span></div>
+        </div>
+        <p>Rarely the training run — it's the labeling, hosting, and the permanent monitoring/retraining loop around it that dominates.</p>
+      </div>
+      <div class="info-card">
+        <h4><span class="dot gen"></span>GenAI (API)</h4>
+        <div class="cost-bars">
+          <div class="cost-bar-row"><span class="cost-bar-label">Build</span><div class="cost-bar-track"><div class="cost-bar-fill gen" style="width:10%"></div></div></div>
+          <div class="cost-bar-row"><span class="cost-bar-label">Run</span><div class="cost-bar-track"><div class="cost-bar-fill stripe"></div></div><span class="cost-bar-note">∝ volume</span></div>
+          <div class="cost-bar-row"><span class="cost-bar-label">Maintain</span><div class="cost-bar-track"><div class="cost-bar-fill gen" style="width:40%"></div></div><span class="cost-bar-note">eval</span></div>
+        </div>
+        <p>Near-zero to start. Output tokens run roughly 3–8x the cost of input tokens — the single biggest lever on the bill.</p>
+      </div>
+    </div>
+
+    <div class="price-table-wrap">
+      <table class="price-table">
+        <thead><tr><th>Provider</th><th>Cheapest current tier</th><th>Frontier tier</th></tr></thead>
+        <tbody>
+          <tr><td class="provider">Anthropic</td><td>Haiku 4.5 — $1 / $5</td><td>Opus 4.8 — $5 / $25</td></tr>
+          <tr><td class="provider">OpenAI</td><td>gpt-5.4-nano — $0.20 / $1.25</td><td>Sol (gpt-5.6) — $5 / $30</td></tr>
+          <tr><td class="provider">Google</td><td>Gemini 2.5 Flash-Lite — $0.10 / $0.40</td><td>Gemini 3.1 Pro — $2 / $12</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="price-caveat">$ per million tokens, input / output — snapshot verified mid-2026 directly from provider pricing pages. This will be stale soon; prices move several times a year. Batch processing ≈ half these rates; cached input ≈ 90% off; regional/data-residency processing adds ≈10%. Check the live pricing page before budgeting.</p>
+
+    <div class="crossover-note">GenAI's near-zero build cost wins at low volume. A rule or ML build's near-zero marginal cost wins at high volume. <b>Where that line sits depends on your actual call volume and today's pricing</b> — model it per capability, don't assume.</div>
+
+    <div class="section-label">Model drift</div>
+    <div class="card-grid cols-2">
+      <div class="info-card">
+        <h4><span class="dot ml"></span>ML model</h4>
+        <p><b style="color:var(--text)">Data drift:</b> the inputs stop looking like training data. <b style="color:var(--text)">Concept drift:</b> the right answer for the same input changes — usually the more dangerous one. Monitored with statistical distribution tests and champion/challenger evaluation before a new model is promoted. A permanent line item, not a one-time cost.</p>
+      </div>
+      <div class="info-card">
+        <h4><span class="dot gen"></span>GenAI</h4>
+        <p>The model changes <i>underneath you</i> — providers update or retire versions on their own schedule. Same prompt, different output, no code change on your side; documented cases show accuracy on identical questions swinging by tens of points across a single update. Managed with prompt-regression testing against a maintained golden dataset, version pinning, and a deprecation calendar with an owner.</p>
+      </div>
+    </div>
+    <p class="rules-note"><span class="dot"></span><span class="price-caveat" style="margin:0;">Rule engines: no drift. Behaviour changes only when a person edits a rule — the lowest ongoing model-risk burden of the three.</span></p>
+  </div>
+
+  <!-- ============ TAB 3 : GOVERNANCE ============ -->
+  <div class="tab-panel" id="tab-gov">
+    <p class="tab-intro">For a regulated bank, these aren't optional context — they can add real cost and lead time to the ML/GenAI paths, and are worth checking before you commit.</p>
+
+    <div class="gov-grid">
+
+      <div class="gov-card">
+        <div class="gov-label">Model risk management</div>
+        <div class="gov-row"><span class="tag-if">IF</span><span class="gov-text">Does this inform a decision about a customer, credit, or risk/compliance outcome?</span></div>
+        <div class="gov-row"><span class="tag-then">THEN</span><span class="gov-text">Full model inventory, independent validation, documented conceptual soundness, and ongoing monitoring apply — landing far more heavily on ML and GenAI than on a deterministic rule engine.</span></div>
+        <div class="note-toggle" data-target="g1"><span class="chev">▸</span> why this still needs a caveat</div>
+        <div class="note-body" id="g1">SR 11-7 / OCC 2011-12 territory — supervisory guidance with a deliberately broad model definition that examiners apply to statistical, ML, and GenAI systems alike. Scope depends on use, not technology: an LLM helping staff search internal documents is generally not a "model" under this guidance; one that generates credit-risk narratives or classifies complaints for regulatory reporting almost certainly is. Validation and documentation add real calendar time before a decision-facing capability can ship — budget for it up front, and confirm specifics with your MRM and legal functions.</div>
+      </div>
+
+      <div class="gov-card">
+        <div class="gov-label">Adverse action</div>
+        <div class="gov-row"><span class="tag-if">IF</span><span class="gov-text">Could this drive a customer-facing decision that's adverse — declined, reduced, or changed terms?</span></div>
+        <div class="gov-row"><span class="tag-then">THEN</span><span class="gov-text">Specific, accurate reasons are legally required. The model may narrate the reason; the reason itself has to come from a validated, explainable decision system.</span></div>
+        <div class="note-toggle" data-target="g2"><span class="chev">▸</span> why this still needs a caveat</div>
+        <div class="note-body" id="g2">ECOA / Regulation B territory, reinforced by CFPB guidance: creditors can't excuse noncompliance on the grounds that their technology is too complicated or opaque to understand. Practically — wrap opaque models with a validated explainability layer, log reason-code accuracy, and never let the LLM freelance the actual reason, only the phrasing.</div>
+      </div>
+
+      <div class="gov-card">
+        <div class="gov-label">Data residency</div>
+        <div class="gov-row"><span class="tag-if">IF</span><span class="gov-text">Does this touch non-public personal or financial data through a third-party-hosted GenAI API?</span></div>
+        <div class="gov-row"><span class="tag-then">THEN</span><span class="gov-text">Needs contractual residency guarantees, data minimisation or tokenisation before the prompt leaves your environment, or route to on-prem rules / self-hosted ML instead.</span></div>
+        <div class="note-toggle" data-target="g3"><span class="chev">▸</span> why this still needs a caveat</div>
+        <div class="note-body" id="g3">Every inference call is a small transfer of sensitive data to someone else's infrastructure — sovereignty rules can apply even to that ephemeral pass-through. Major providers now sell regional-processing tiers at roughly a 10% premium; that premium is the price of the guarantee, not a reason to skip it for a genuinely sensitive workload.</div>
+      </div>
+
+      <div class="gov-card">
+        <div class="gov-label">Lock-in &amp; prompt injection</div>
+        <div class="gov-row"><span class="tag-if">IF</span><span class="gov-text">Is this a GenAI path with logic tuned to one provider's model, or with any tool-calling ability?</span></div>
+        <div class="gov-row"><span class="tag-then">THEN</span><span class="gov-text">Two risks worth designing against from day one: switching providers later is expensive if logic is baked into one model's quirks, and the model can't reliably tell trusted instructions apart from untrusted text it reads.</span></div>
+        <div class="note-toggle" data-target="g4"><span class="chev">▸</span> why this still needs a caveat</div>
+        <div class="note-body" id="g4"><b style="color:var(--text)">Lock-in:</b> keep model choice behind an abstraction layer, enforce structured output, and maintain a provider-neutral test set so switching is a config change, not a rewrite. <b style="color:var(--text)">Injection:</b> OWASP's top-ranked LLM risk for a reason — no fool-proof prevention exists yet, so never give the model direct write access to systems of record, treat anything it reads as untrusted, and enforce least-privilege on every tool it can call.</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ============ PERSISTENT: PRECEDENT + CHECKLIST + FOOTER ============ -->
+
+  <div class="precedent">
+    <div class="precedent-tag">Already shipped this way</div>
+    <h3>Wire-transaction matching</h3>
+    <p>A deterministic rules engine — normaliser, rule registry, pairwise evaluation, confidence filtering — identifies related transactions. The model's only job is turning that rule-match metadata into a plain-language explanation. Zero LLM arithmetic. Zero LLM data retrieval. Fully deterministic, fully testable.</p>
+    <div class="precedent-fits">
+      <span>Gates → hybrid: rules + narration</span>
+      <span>Cost → near-zero marginal LLM spend</span>
+      <span>Governance → low MRM burden (deterministic core)</span>
+    </div>
+  </div>
+
+  <div class="section-label">Self-check before you pitch it</div>
+  <div class="checklist">
+    <div class="check-item"><div class="check-num">01</div><div><div class="check-q">What are we actually trying to do?</div><div class="check-sub">Define the problem before naming a tool for it — not "what could GenAI do here."</div></div></div>
+    <div class="check-item"><div class="check-num">02</div><div><div class="check-q">What does this option add that the alternative can't?</div></div></div>
+    <div class="check-item"><div class="check-num">03</div><div><div class="check-q">What exactly is the model deciding, versus what a validated system decides?</div></div></div>
+    <div class="check-item"><div class="check-num">04</div><div><div class="check-q">What's the failure mode — and who owns it when it's wrong?</div></div></div>
+    <div class="check-item"><div class="check-num">05</div><div><div class="check-q">Does it clear 10x — or does the cheaper path get 80% of the value?</div></div></div>
+    <div class="check-item"><div class="check-num">06</div><div><div class="check-q">What does this cost at the volume it'll actually run at — not the pilot volume?</div></div></div>
+    <div class="check-item"><div class="check-num">07</div><div><div class="check-q">Does this trigger MRM, adverse-action, or data-residency review — and is that lead time budgeted?</div></div></div>
+  </div>
+
+  <div class="footer-note">Where these lines fall shifts fast — model prices move multiple times a year, and the boundary between the three categories isn't fixed doctrine. The 10x bar, the cost figures, and the governance triggers are all heuristics to keep you honest, not measured constants. Re-verify pricing against provider pages before budgeting, and check specifics with legal/compliance before treating any governance read here as final.</div>
+
+</div>
+<script>
+  document.querySelectorAll('.note-toggle').forEach(function(el){
+    el.addEventListener('click', function(){
+      var target = document.getElementById(el.getAttribute('data-target'));
+      var isOpen = target.classList.toggle('open');
+      el.classList.toggle('open', isOpen);
+    });
+  });
+  document.querySelectorAll('.tab-btn').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      document.querySelectorAll('.tab-btn').forEach(function(b){ b.classList.remove('active'); });
+      document.querySelectorAll('.tab-panel').forEach(function(p){ p.classList.remove('active'); });
+      btn.classList.add('active');
+      document.getElementById('tab-' + btn.getAttribute('data-tab')).classList.add('active');
+    });
+  });
+</script>
+</body>
+</html>
